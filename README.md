@@ -35,6 +35,7 @@ on conflict do nothing;
 ```
 
 4. In `Authentication > Users`, create a user with the same email and a password.
+5. In `Authentication > Providers > Email`, set `Confirm email` to `OFF` (for pure email+password login without verification).
 
 ## 2) Configure Environment Variables
 

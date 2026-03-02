@@ -8,6 +8,8 @@ import { createClient } from "@/lib/supabase/client";
 
 const roleErrorMessage =
   "This account is not an admin. Add this email to public.admin_emails in Supabase SQL Editor.";
+const emailConfirmationEnabledMessage =
+  "Email confirmation is enabled in Supabase. Turn it OFF in Authentication > Providers > Email to use only email + password.";
 
 type AuthMode = "signin" | "signup";
 
@@ -19,7 +21,6 @@ export default function AdminLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
-  const [notice, setNotice] = useState<string>("");
   const [error, setError] = useState<string>("");
 
   useEffect(() => {
@@ -39,33 +40,32 @@ export default function AdminLoginPage() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setBusy(true);
-    setNotice("");
     setError("");
 
     try {
       const client = getSupabaseClient();
+      const normalizedEmailInput = email.trim().toLowerCase();
 
       if (mode === "signup") {
         const { error: signUpError } = await client.auth.signUp({
-          email: email.trim(),
+          email: normalizedEmailInput,
           password,
         });
 
         if (signUpError) {
           throw new Error(signUpError.message);
         }
-
-        setNotice("Account created. If email confirmation is enabled, verify your email, then sign in.");
-        setMode("signin");
-        return;
       }
 
       const { error: authError } = await client.auth.signInWithPassword({
-        email: email.trim(),
+        email: normalizedEmailInput,
         password,
       });
 
       if (authError) {
+        if (mode === "signup" && authError.message.toLowerCase().includes("email not confirmed")) {
+          throw new Error(emailConfirmationEnabledMessage);
+        }
         throw new Error(authError.message);
       }
 
@@ -119,7 +119,6 @@ export default function AdminLoginPage() {
             onClick={() => {
               setMode("signin");
               setError("");
-              setNotice("");
             }}
             className={`rounded-full px-4 py-2 text-sm ${mode === "signin" ? "bg-accent text-black" : "text-muted"}`}
           >
@@ -130,7 +129,6 @@ export default function AdminLoginPage() {
             onClick={() => {
               setMode("signup");
               setError("");
-              setNotice("");
             }}
             className={`rounded-full px-4 py-2 text-sm ${mode === "signup" ? "bg-accent text-black" : "text-muted"}`}
           >
@@ -164,7 +162,6 @@ export default function AdminLoginPage() {
               Password should be at least 6 characters (or follow your Supabase Auth password policy).
             </p>
           ) : null}
-          {notice ? <p className="rounded-lg border border-accent/50 bg-accent/10 px-3 py-2 text-xs text-accent">{notice}</p> : null}
           {error ? <p className="rounded-lg border border-accent-2/50 bg-accent-2/10 px-3 py-2 text-xs text-accent-2">{error}</p> : null}
           <button
             type="submit"
