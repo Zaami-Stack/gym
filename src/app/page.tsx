@@ -262,7 +262,7 @@ export default async function Home() {
 
       <section id="visit" className="mx-auto mt-16 grid max-w-7xl gap-5 px-4 md:px-8">
         <article className="rounded-2xl border border-line bg-black/35 p-7 backdrop-blur">
-          <h2 className="font-heading text-4xl text-paper md:text-5xl">Membership Starts at $39/month</h2>
+          <h2 className="font-heading text-4xl text-paper md:text-5xl">Membership Starts at 200Dh/month</h2>
           <p className="mt-4 max-w-xl text-sm leading-6 text-muted">
             Flexible plans, no hidden fees, and full access to all training zones. Ask front-desk for personal coaching
             packages and nutrition support.
