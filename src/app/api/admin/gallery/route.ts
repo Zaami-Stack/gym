@@ -92,7 +92,7 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ message: "Unauthorized." }, { status: 401 });
   }
 
-  let body: { id?: string; display_order?: number };
+  let body: { id?: string; display_order?: number; alt_text?: string; image_url?: string };
   try {
     body = await request.json();
   } catch {
@@ -100,18 +100,43 @@ export async function PATCH(request: Request) {
   }
 
   const id = String(body.id || "");
-  const display_order = Number(body.display_order);
   if (!id) {
     return NextResponse.json({ message: "Image id is required." }, { status: 400 });
   }
-  if (!Number.isFinite(display_order)) {
-    return NextResponse.json({ message: "Display order must be a number." }, { status: 400 });
+
+  const updates: Partial<Pick<GalleryImage, "display_order" | "alt_text" | "image_url">> = {};
+
+  if (typeof body.display_order !== "undefined") {
+    const display_order = Number(body.display_order);
+    if (!Number.isFinite(display_order)) {
+      return NextResponse.json({ message: "Display order must be a number." }, { status: 400 });
+    }
+    updates.display_order = display_order;
+  }
+
+  if (Object.prototype.hasOwnProperty.call(body, "alt_text")) {
+    updates.alt_text = String(body.alt_text || "").trim();
+  }
+
+  if (Object.prototype.hasOwnProperty.call(body, "image_url")) {
+    const image_url = normalizeMediaImageUrl(String(body.image_url || ""));
+    if (!image_url) {
+      return NextResponse.json({ message: "Image URL is required." }, { status: 400 });
+    }
+    if (!isHttpImageUrl(image_url)) {
+      return NextResponse.json({ message: "Image URL must be a valid http(s) link." }, { status: 400 });
+    }
+    updates.image_url = image_url;
+  }
+
+  if (Object.keys(updates).length === 0) {
+    return NextResponse.json({ message: "No gallery fields to update." }, { status: 400 });
   }
 
   const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("gallery_images")
-    .update({ display_order })
+    .update(updates)
     .eq("id", id)
     .select("*")
     .maybeSingle();
@@ -123,7 +148,15 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ message: "Gallery image not found." }, { status: 404 });
   }
 
-  return NextResponse.json({ image: data }, { status: 200 });
+  return NextResponse.json(
+    {
+      image: {
+        ...data,
+        image_url: normalizeMediaImageUrl(data.image_url),
+      },
+    },
+    { status: 200 },
+  );
 }
 
 export async function DELETE(request: Request) {

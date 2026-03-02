@@ -50,6 +50,28 @@ async function requestJson(path: string, init: RequestInit = {}) {
   return data as Record<string, unknown>;
 }
 
+async function uploadImageFile(file: File) {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await fetch("/api/admin/upload", {
+    method: "POST",
+    body: formData,
+    cache: "no-store",
+  });
+  const data = await parseJsonResponse(response);
+
+  if (!response.ok) {
+    throw new Error((data as { message?: string } | null)?.message || "Failed to upload image.");
+  }
+
+  const imageUrl = String((data as { image_url?: string } | null)?.image_url || "");
+  if (!imageUrl) {
+    throw new Error("Upload finished but no image URL was returned.");
+  }
+  return imageUrl;
+}
+
 export default function AdminDashboard({
   adminEmail,
   initialSettings,
@@ -70,7 +92,8 @@ export default function AdminDashboard({
   const [noticeMessage, setNoticeMessage] = useState("");
   const [noticeActive, setNoticeActive] = useState(true);
 
-  const [galleryUrl, setGalleryUrl] = useState("");
+  const [galleryFile, setGalleryFile] = useState<File | null>(null);
+  const [galleryFileInputKey, setGalleryFileInputKey] = useState(0);
   const [galleryAlt, setGalleryAlt] = useState("");
   const [galleryOrder, setGalleryOrder] = useState("1");
   const [galleryOrderDrafts, setGalleryOrderDrafts] = useState<Record<string, string>>(
@@ -80,6 +103,15 @@ export default function AdminDashboard({
         return acc;
       }, {}),
   );
+  const [galleryAltDrafts, setGalleryAltDrafts] = useState<Record<string, string>>(
+    () =>
+      initialGallery.reduce<Record<string, string>>((acc, item) => {
+        acc[item.id] = item.alt_text || "";
+        return acc;
+      }, {}),
+  );
+  const [galleryReplaceFiles, setGalleryReplaceFiles] = useState<Record<string, File | null>>({});
+  const [galleryReplaceInputKeys, setGalleryReplaceInputKeys] = useState<Record<string, number>>({});
 
   async function handleSaveHero(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -186,10 +218,10 @@ export default function AdminDashboard({
     setStatus(null);
 
     try {
-      const imageUrl = galleryUrl.trim();
-      if (!imageUrl) {
-        throw new Error("Image URL is required.");
+      if (!galleryFile) {
+        throw new Error("Select an image file.");
       }
+      const imageUrl = await uploadImageFile(galleryFile);
 
       const orderValue = Number.parseInt(galleryOrder, 10);
       if (!Number.isFinite(orderValue)) {
@@ -211,7 +243,12 @@ export default function AdminDashboard({
         ...current,
         [row.id]: String(row.display_order),
       }));
-      setGalleryUrl("");
+      setGalleryAltDrafts((current) => ({
+        ...current,
+        [row.id]: row.alt_text || "",
+      }));
+      setGalleryFile(null);
+      setGalleryFileInputKey((current) => current + 1);
       setGalleryAlt("");
       setGalleryOrder(String(orderValue + 1));
       setStatus({ tone: "success", message: "Gallery image added." });
@@ -239,6 +276,21 @@ export default function AdminDashboard({
         delete next[id];
         return next;
       });
+      setGalleryAltDrafts((current) => {
+        const next = { ...current };
+        delete next[id];
+        return next;
+      });
+      setGalleryReplaceFiles((current) => {
+        const next = { ...current };
+        delete next[id];
+        return next;
+      });
+      setGalleryReplaceInputKeys((current) => {
+        const next = { ...current };
+        delete next[id];
+        return next;
+      });
       setStatus({ tone: "success", message: "Gallery image deleted." });
       router.refresh();
     } catch (error) {
@@ -249,8 +301,8 @@ export default function AdminDashboard({
     }
   }
 
-  async function handleSaveGalleryOrder(id: string) {
-    setBusyAction(`order-gallery-${id}`);
+  async function handleSaveGalleryDetails(id: string) {
+    setBusyAction(`save-gallery-${id}`);
     setStatus(null);
 
     try {
@@ -260,21 +312,68 @@ export default function AdminDashboard({
         throw new Error("Order must be a valid number.");
       }
 
-      await requestJson("/api/admin/gallery", {
+      const data = await requestJson("/api/admin/gallery", {
         method: "PATCH",
         body: JSON.stringify({
           id,
           display_order: nextOrder,
+          alt_text: (galleryAltDrafts[id] || "").trim(),
         }),
       });
 
-      setGallery((current) =>
-        sortGallery(current.map((item) => (item.id === id ? { ...item, display_order: nextOrder } : item))),
-      );
-      setStatus({ tone: "success", message: "Gallery order updated." });
+      const updatedImage = data.image as GalleryImage;
+      setGallery((current) => sortGallery(current.map((item) => (item.id === id ? updatedImage : item))));
+      setGalleryOrderDrafts((current) => ({
+        ...current,
+        [id]: String(updatedImage.display_order),
+      }));
+      setGalleryAltDrafts((current) => ({
+        ...current,
+        [id]: updatedImage.alt_text || "",
+      }));
+      setStatus({ tone: "success", message: "Gallery image updated." });
       router.refresh();
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Failed to update gallery order.";
+      const message = error instanceof Error ? error.message : "Failed to update gallery image.";
+      setStatus({ tone: "error", message });
+    } finally {
+      setBusyAction(null);
+    }
+  }
+
+  async function handleReplaceGalleryImage(id: string) {
+    setBusyAction(`replace-gallery-${id}`);
+    setStatus(null);
+
+    try {
+      const file = galleryReplaceFiles[id];
+      if (!file) {
+        throw new Error("Select a replacement image first.");
+      }
+
+      const imageUrl = await uploadImageFile(file);
+      const data = await requestJson("/api/admin/gallery", {
+        method: "PATCH",
+        body: JSON.stringify({
+          id,
+          image_url: imageUrl,
+        }),
+      });
+
+      const updatedImage = data.image as GalleryImage;
+      setGallery((current) => sortGallery(current.map((item) => (item.id === id ? updatedImage : item))));
+      setGalleryReplaceFiles((current) => ({
+        ...current,
+        [id]: null,
+      }));
+      setGalleryReplaceInputKeys((current) => ({
+        ...current,
+        [id]: (current[id] ?? 0) + 1,
+      }));
+      setStatus({ tone: "success", message: "Gallery image replaced." });
+      router.refresh();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to replace gallery image.";
       setStatus({ tone: "error", message });
     } finally {
       setBusyAction(null);
@@ -518,13 +617,13 @@ export default function AdminDashboard({
         <h2 className="font-heading text-3xl text-paper md:text-4xl">Gallery Manager</h2>
         <form className="mt-4 grid gap-3 lg:grid-cols-2" onSubmit={handleAddGalleryImage}>
           <label className="block">
-            <span className="mb-1 block text-xs uppercase tracking-wider text-muted">Image URL</span>
+            <span className="mb-1 block text-xs uppercase tracking-wider text-muted">Upload Image</span>
             <input
-              type="url"
-              value={galleryUrl}
-              onChange={(event) => setGalleryUrl(event.target.value)}
+              key={galleryFileInputKey}
+              type="file"
+              accept="image/*"
+              onChange={(event) => setGalleryFile(event.target.files?.[0] || null)}
               className="w-full rounded-lg border border-line bg-panel px-3 py-2 text-sm text-paper outline-none focus:border-accent"
-              placeholder="https://..."
               required
             />
           </label>
@@ -562,8 +661,21 @@ export default function AdminDashboard({
           {gallery.map((item) => (
             <article key={item.id} className="overflow-hidden rounded-xl border border-line bg-panel/80">
               <img src={item.image_url} alt={item.alt_text || "Gym image"} className="h-44 w-full object-cover" />
-              <div className="space-y-2 p-3">
-                <p className="text-xs text-muted">{item.alt_text || "No alt text provided."}</p>
+              <div className="space-y-3 p-3">
+                <label className="block">
+                  <span className="mb-1 block text-[11px] uppercase tracking-wider text-muted">Alt Text</span>
+                  <input
+                    value={galleryAltDrafts[item.id] ?? item.alt_text ?? ""}
+                    onChange={(event) =>
+                      setGalleryAltDrafts((current) => ({
+                        ...current,
+                        [item.id]: event.target.value,
+                      }))
+                    }
+                    className="w-full rounded-md border border-line bg-black/30 px-2 py-1 text-xs text-paper sm:text-sm"
+                    placeholder="Describe this image"
+                  />
+                </label>
                 <div className="flex flex-wrap items-center gap-2">
                   <input
                     type="number"
@@ -578,21 +690,46 @@ export default function AdminDashboard({
                   />
                   <button
                     type="button"
-                    onClick={() => handleSaveGalleryOrder(item.id)}
-                    disabled={busyAction === `order-gallery-${item.id}`}
+                    onClick={() => handleSaveGalleryDetails(item.id)}
+                    disabled={busyAction === `save-gallery-${item.id}`}
                     className="rounded-full border border-accent/50 px-3 py-1 text-xs font-semibold text-accent hover:border-accent sm:text-sm"
                   >
-                    Save order
+                    {busyAction === `save-gallery-${item.id}` ? "Saving..." : "Save details"}
                   </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => handleDeleteGalleryImage(item.id)}
-                  disabled={busyAction === `delete-gallery-${item.id}`}
-                  className="rounded-full border border-accent-2/60 px-3 py-1 text-xs font-semibold text-accent-2 hover:border-accent-2 sm:text-sm"
-                >
-                  Delete image
-                </button>
+                <label className="block">
+                  <span className="mb-1 block text-[11px] uppercase tracking-wider text-muted">Replace Image</span>
+                  <input
+                    key={`${item.id}-${galleryReplaceInputKeys[item.id] ?? 0}`}
+                    type="file"
+                    accept="image/*"
+                    onChange={(event) =>
+                      setGalleryReplaceFiles((current) => ({
+                        ...current,
+                        [item.id]: event.target.files?.[0] || null,
+                      }))
+                    }
+                    className="w-full rounded-md border border-line bg-black/30 px-2 py-1 text-xs text-paper sm:text-sm"
+                  />
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleReplaceGalleryImage(item.id)}
+                    disabled={busyAction === `replace-gallery-${item.id}`}
+                    className="rounded-full border border-accent/50 px-3 py-1 text-xs font-semibold text-accent hover:border-accent sm:text-sm"
+                  >
+                    {busyAction === `replace-gallery-${item.id}` ? "Replacing..." : "Replace image"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteGalleryImage(item.id)}
+                    disabled={busyAction === `delete-gallery-${item.id}`}
+                    className="rounded-full border border-accent-2/60 px-3 py-1 text-xs font-semibold text-accent-2 hover:border-accent-2 sm:text-sm"
+                  >
+                    Delete image
+                  </button>
+                </div>
               </div>
             </article>
           ))}
