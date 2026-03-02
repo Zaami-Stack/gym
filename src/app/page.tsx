@@ -75,12 +75,65 @@ export const dynamic = "force-dynamic";
 export default async function Home() {
   const { settings, gallery, notifications, isAdmin, hasSession } = await getPublicContent();
 
+  const authAction = isAdmin ? (
+    <Link
+      href="/admin"
+      className="rounded-full border border-accent-2/70 bg-accent-2/20 px-4 py-2 text-sm font-semibold text-paper transition hover:bg-accent-2/30"
+    >
+      Dashboard
+    </Link>
+  ) : hasSession ? (
+    <SignOutButton className="rounded-full border border-paper/30 px-4 py-2 text-sm text-paper transition hover:border-accent-2 hover:text-paper disabled:opacity-60" />
+  ) : (
+    <Link
+      href="/admin/login"
+      className="rounded-full border border-paper/30 px-4 py-2 text-sm text-paper transition hover:border-accent-2 hover:text-paper"
+    >
+      Sign in / Sign up
+    </Link>
+  );
+
   return (
     <main className="min-h-screen pb-16">
       <nav className="sticky top-0 z-40 border-b border-line bg-ink/90 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3 md:px-8">
-          <p className="font-heading text-3xl tracking-[0.14em] text-accent md:text-4xl">ESPACE FITNESS SM</p>
-          <div className="flex items-center gap-3 text-xs text-muted md:gap-4 md:text-sm">
+        <div className="mx-auto max-w-7xl px-4 py-3 md:px-8">
+          <div className="flex items-center justify-between gap-3">
+            <p className="font-heading text-2xl tracking-[0.08em] text-accent sm:text-3xl md:text-4xl">ESPACE FITNESS SM</p>
+            <div className="flex items-center gap-2">
+              <div className="hidden md:block">{authAction}</div>
+              <details className="relative md:hidden">
+                <summary className="list-none rounded-lg border border-paper/30 bg-white/5 px-3 py-2 text-sm text-paper marker:content-none">
+                  Menu
+                </summary>
+                <div className="absolute right-0 mt-2 w-56 rounded-xl border border-line bg-ink p-3 shadow-2xl">
+                  <div className="flex flex-col gap-2 text-sm text-muted">
+                    <a href="#programs" className="rounded-md px-2 py-1 transition hover:bg-white/5 hover:text-paper">
+                      Programmes
+                    </a>
+                    <a href="#gallery" className="rounded-md px-2 py-1 transition hover:bg-white/5 hover:text-paper">
+                      Galerie
+                    </a>
+                    <a href="#visit" className="rounded-md px-2 py-1 transition hover:bg-white/5 hover:text-paper">
+                      Tarifs
+                    </a>
+                    <a href="#contact" className="rounded-md px-2 py-1 transition hover:bg-white/5 hover:text-paper">
+                      Contact
+                    </a>
+                    <a
+                      href={instagramUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="rounded-md px-2 py-1 transition hover:bg-white/5 hover:text-paper"
+                    >
+                      Instagram
+                    </a>
+                    <div className="pt-2">{authAction}</div>
+                  </div>
+                </div>
+              </details>
+            </div>
+          </div>
+          <div className="mt-3 hidden items-center gap-4 text-sm text-muted md:flex">
             <a href="#programs" className="transition hover:text-paper">
               Programmes
             </a>
@@ -97,23 +150,6 @@ export default async function Home() {
               Instagram
             </a>
           </div>
-          {isAdmin ? (
-            <Link
-              href="/admin"
-              className="rounded-full border border-accent-2/70 bg-accent-2/20 px-4 py-2 text-sm font-semibold text-paper transition hover:bg-accent-2/30"
-            >
-              Dashboard
-            </Link>
-          ) : hasSession ? (
-            <SignOutButton className="rounded-full border border-paper/30 px-4 py-2 text-sm text-paper transition hover:border-accent-2 hover:text-paper disabled:opacity-60" />
-          ) : (
-            <Link
-              href="/admin/login"
-              className="rounded-full border border-paper/30 px-4 py-2 text-sm text-paper transition hover:border-accent-2 hover:text-paper"
-            >
-              Sign in / Sign up
-            </Link>
-          )}
         </div>
       </nav>
 
@@ -135,18 +171,18 @@ export default async function Home() {
 
       <section className="px-4 pt-4 md:px-8">
         <div
-          className="mx-auto min-h-[70vh] max-w-7xl overflow-hidden rounded-3xl border border-line/60"
+          className="mx-auto min-h-[64vh] max-w-7xl overflow-hidden rounded-3xl border border-line/60"
           style={{
             backgroundImage: `linear-gradient(110deg, rgb(2 10 29 / 90%) 0%, rgb(2 10 29 / 66%) 38%, rgb(2 10 29 / 86%) 100%), url(${settings.hero_image_url})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
           }}
         >
-          <div className="flex h-full flex-col justify-end px-6 pb-10 pt-12 md:px-12 md:pb-12 md:pt-16">
+          <div className="flex h-full flex-col justify-end px-5 pb-8 pt-10 md:px-12 md:pb-12 md:pt-16">
             <div className="max-w-3xl">
-              <h1 className="font-heading text-5xl leading-none text-paper md:text-7xl">{settings.hero_title}</h1>
-              <p className="mt-5 max-w-2xl text-base text-muted md:text-lg">{settings.hero_subtitle}</p>
-              <div className="mt-8 flex flex-wrap gap-3">
+              <h1 className="font-heading text-4xl leading-none text-paper sm:text-5xl md:text-7xl">{settings.hero_title}</h1>
+              <p className="mt-4 max-w-2xl text-sm text-muted md:mt-5 md:text-lg">{settings.hero_subtitle}</p>
+              <div className="mt-6 flex flex-wrap gap-3 md:mt-8">
                 <a
                   href="#programs"
                   className="rounded-full bg-accent-2 px-6 py-3 font-semibold text-paper transition hover:bg-accent-2/85"
@@ -166,11 +202,26 @@ export default async function Home() {
       </section>
 
       <section id="programs" className="mx-auto mt-16 max-w-7xl px-4 md:px-8">
-        <h2 className="font-heading text-5xl text-paper">Programmes</h2>
+        <h2 className="font-heading text-4xl text-paper md:text-5xl">Programmes</h2>
         <div className="mt-6 grid gap-5 lg:grid-cols-2">
           <article className="rounded-2xl border border-line bg-panel/70 p-6 backdrop-blur">
-            <h3 className="font-heading text-4xl text-accent">Programme Femmes</h3>
-            <div className="mt-4 overflow-x-auto">
+            <h3 className="font-heading text-3xl text-accent md:text-4xl">Programme Femmes</h3>
+            <div className="mt-4 space-y-3 md:hidden">
+              {womenProgram.map((entry) => (
+                <div key={entry.day} className="rounded-xl border border-line bg-black/20 p-3">
+                  <p className="font-heading text-2xl text-paper">{entry.day}</p>
+                  <ul className="mt-2 space-y-1">
+                    {entry.sessions.map((session) => (
+                      <li key={`${entry.day}-${session.time}-${session.className}`} className="flex items-center justify-between gap-3 text-xs">
+                        <span className="text-muted">{session.time}</span>
+                        <span className="font-semibold text-accent-2">{session.className}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+            <div className="mt-4 hidden overflow-x-auto md:block">
               <table className="min-w-full text-left text-sm">
                 <thead>
                   <tr className="border-b border-line text-xs uppercase tracking-wider text-muted">
@@ -200,8 +251,17 @@ export default async function Home() {
           </article>
 
           <article className="rounded-2xl border border-line bg-panel/70 p-6 backdrop-blur">
-            <h3 className="font-heading text-4xl text-accent">Programme Hommes</h3>
-            <div className="mt-4 overflow-x-auto">
+            <h3 className="font-heading text-3xl text-accent md:text-4xl">Programme Hommes</h3>
+            <div className="mt-4 space-y-2 md:hidden">
+              {menProgram.map((item) => (
+                <div key={item.day} className="rounded-xl border border-line bg-black/20 p-3">
+                  <p className="text-sm font-semibold text-paper">{item.day}</p>
+                  <p className="text-xs text-muted">{item.hours}</p>
+                  {item.course ? <p className="mt-1 text-xs font-semibold text-accent-2">{item.course}</p> : null}
+                </div>
+              ))}
+            </div>
+            <div className="mt-4 hidden overflow-x-auto md:block">
               <table className="min-w-full text-left text-sm">
                 <thead>
                   <tr className="border-b border-line text-xs uppercase tracking-wider text-muted">
@@ -225,8 +285,16 @@ export default async function Home() {
         </div>
 
         <article className="mt-5 rounded-2xl border border-line bg-black/35 p-6 backdrop-blur">
-          <h3 className="font-heading text-4xl text-paper">Opening Hours</h3>
-          <div className="mt-3 overflow-x-auto">
+          <h3 className="font-heading text-3xl text-paper md:text-4xl">Opening Hours</h3>
+          <div className="mt-3 grid grid-cols-1 gap-2 md:hidden">
+            {openingHours.map((item) => (
+              <div key={item.day} className="flex items-center justify-between rounded-xl border border-line/70 bg-panel/50 px-3 py-2">
+                <span className="text-sm font-semibold text-paper">{item.day}</span>
+                <span className="text-xs text-muted">{item.hours}</span>
+              </div>
+            ))}
+          </div>
+          <div className="mt-3 hidden overflow-x-auto md:block">
             <table className="min-w-full text-left text-sm">
               <thead>
                 <tr className="border-b border-line text-xs uppercase tracking-wider text-muted">
@@ -249,7 +317,7 @@ export default async function Home() {
 
       <section id="gallery" className="mx-auto mt-16 max-w-7xl px-4 md:px-8">
         <div className="flex flex-wrap items-end justify-between gap-4">
-          <h2 className="font-heading text-5xl text-paper">Gym Gallery</h2>
+          <h2 className="font-heading text-4xl text-paper md:text-5xl">Gym Gallery</h2>
         </div>
         <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {gallery.map((image) => (
@@ -267,7 +335,7 @@ export default async function Home() {
 
       <section id="visit" className="mx-auto mt-16 grid max-w-7xl gap-5 px-4 md:px-8">
         <article className="rounded-2xl border border-line bg-black/35 p-7 backdrop-blur">
-          <h2 className="font-heading text-5xl text-paper">Membership Starts at $39/month</h2>
+          <h2 className="font-heading text-4xl text-paper md:text-5xl">Membership Starts at $39/month</h2>
           <p className="mt-4 max-w-xl text-sm leading-6 text-muted">
             Flexible plans, no hidden fees, and full access to all training zones. Ask front-desk for personal coaching
             packages and nutrition support.
@@ -287,7 +355,7 @@ export default async function Home() {
 
       <section id="contact" className="mx-auto mt-16 max-w-7xl px-4 md:px-8">
         <article className="rounded-2xl border border-line bg-panel/70 p-7">
-          <h2 className="font-heading text-5xl text-paper">Contact</h2>
+          <h2 className="font-heading text-4xl text-paper md:text-5xl">Contact</h2>
           <p className="mt-3 text-sm text-muted">
             Visit ESPACE FITNESS SM reception for membership and coaching info. You can also contact us on Instagram.
           </p>

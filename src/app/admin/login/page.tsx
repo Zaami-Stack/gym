@@ -88,11 +88,11 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-lg items-center px-4 py-8">
-      <section className="w-full rounded-2xl border border-line bg-panel/80 p-7">
-        <p className="font-heading text-5xl text-accent">ESPACE FITNESS SM</p>
+    <main className="mx-auto flex min-h-screen max-w-lg items-center px-3 py-6 sm:px-4 sm:py-8">
+      <section className="w-full rounded-2xl border border-line bg-panel/80 p-5 sm:p-7">
+        <p className="font-heading text-4xl text-accent sm:text-5xl">ESPACE FITNESS SM</p>
 
-        <div className="mt-6 inline-flex rounded-full border border-line bg-black/30 p-1">
+        <div className="mt-5 inline-flex rounded-full border border-line bg-black/30 p-1">
           <button
             type="button"
             onClick={() => {
