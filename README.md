@@ -1,36 +1,81 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Iron Temple Gym Website (Next.js + Supabase + Vercel)
 
-## Getting Started
+Fullstack gym website with an admin dashboard.
 
-First, run the development server:
+## Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Public gym website with:
+  - Dynamic hero title/subtitle/image
+  - Dynamic gallery section
+  - Dynamic top notifications bar
+- Admin dashboard with email/password login:
+  - Update hero content and hero image
+  - Add/enable/disable/delete notifications
+  - Add/delete/reorder gallery images
+- Role-based access (`admin` vs `member`) using Supabase Auth + RLS policies
+- Supabase Storage uploads for hero/gallery images (bucket: `media`)
+
+## Tech
+
+- Next.js App Router (TypeScript, Tailwind CSS)
+- Supabase (Auth, Postgres, RLS, Storage)
+- Vercel deployment
+
+## 1) Create Supabase Project (Free Plan)
+
+1. Create a new Supabase project.
+2. In `SQL Editor`, run [`supabase/schema.sql`](./supabase/schema.sql).
+3. In `Authentication > Users`, create a user for admin login (email + password).
+4. In `SQL Editor`, set that user as admin:
+
+```sql
+update public.profiles
+set role = 'admin'
+where id = 'YOUR_AUTH_USER_UUID';
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+You can copy the UUID from `Authentication > Users`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 2) Configure Environment Variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Create `.env.local` from `.env.example`:
 
-## Learn More
+```bash
+cp .env.example .env.local
+```
 
-To learn more about Next.js, take a look at the following resources:
+Set:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Both values are in `Supabase > Project Settings > API`.
 
-## Deploy on Vercel
+## 3) Run Locally
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+npm install
+npm run dev
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Open:
+
+- Website: `http://localhost:3000`
+- Admin login: `http://localhost:3000/admin/login`
+
+## 4) Deploy to Vercel
+
+1. Push this repo to GitHub.
+2. Import project into Vercel.
+3. Add the same env vars in Vercel:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+4. Deploy.
+
+Your dashboard and public site will use Supabase data on Vercel.
+
+## Notes
+
+- The admin dashboard relies on Supabase RLS policies from `supabase/schema.sql`.
+- Public visitors can only read published content.
+- Only users with `profiles.role = 'admin'` can update site content.
