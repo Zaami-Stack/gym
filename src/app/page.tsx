@@ -31,7 +31,7 @@ const classHours = [
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const { settings, gallery, notifications } = await getPublicContent();
+  const { settings, gallery, notifications, isAdmin } = await getPublicContent();
 
   return (
     <main className="min-h-screen pb-16">
@@ -60,12 +60,21 @@ export default async function Home() {
           <div className="flex h-full flex-col px-6 pb-10 pt-6 md:px-12 md:pb-12 md:pt-8">
             <header className="flex flex-wrap items-center justify-between gap-4">
               <p className="font-heading text-4xl tracking-[0.2em] text-paper md:text-5xl">Iron Temple</p>
-              <Link
-                href="/admin/login"
-                className="rounded-full border border-paper/30 px-4 py-2 text-sm text-paper transition hover:border-accent hover:text-accent"
-              >
-                Admin Dashboard
-              </Link>
+              {isAdmin ? (
+                <Link
+                  href="/admin"
+                  className="rounded-full border border-paper/30 px-4 py-2 text-sm text-paper transition hover:border-accent hover:text-accent"
+                >
+                  Dashboard
+                </Link>
+              ) : (
+                <Link
+                  href="/admin/login"
+                  className="rounded-full border border-paper/30 px-4 py-2 text-sm text-paper transition hover:border-accent hover:text-accent"
+                >
+                  Login
+                </Link>
+              )}
             </header>
 
             <div className="mt-12 max-w-3xl md:mt-24">

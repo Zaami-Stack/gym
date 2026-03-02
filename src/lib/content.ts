@@ -18,10 +18,26 @@ export async function getPublicContent() {
   const settings = (settingsResult.data as SiteSettings | null) ?? defaultSettings;
   const galleryRaw = galleryResult.data as GalleryImage[] | null;
   const notifications = (notificationsResult.data as Notification[] | null) ?? [];
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  let isAdmin = false;
+  if (user?.email) {
+    const normalizedEmail = user.email.toLowerCase();
+    const { data: adminRow, error: adminError } = await supabase
+      .from("admin_emails")
+      .select("email")
+      .eq("email", normalizedEmail)
+      .maybeSingle();
+
+    isAdmin = !adminError && Boolean(adminRow);
+  }
 
   return {
     settings,
     gallery: galleryRaw && galleryRaw.length > 0 ? galleryRaw : defaultGallery,
     notifications,
+    isAdmin,
   };
 }
