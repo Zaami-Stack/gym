@@ -67,7 +67,9 @@ const openingHours = [
   { day: "Dimanche", hours: "10:00 - 14:00" },
 ];
 
-const instagramUrl = "https://www.instagram.com/espacefitnesssm/";
+const instagramUrl = "https://www.instagram.com/espace.fitness.sm/";
+const phoneNumber = "0665661213";
+const fullAddress = "NR 25, Lotissement Charaf, Casablanca, Casablanca, Morocco";
 
 export const dynamic = "force-dynamic";
 
@@ -281,9 +283,16 @@ export default async function Home() {
       <section id="contact" className="mx-auto mt-16 max-w-7xl px-4 md:px-8">
         <article className="rounded-2xl border border-line bg-panel/70 p-7">
           <h2 className="font-heading text-4xl text-paper md:text-5xl">Contact</h2>
-          <p className="mt-3 text-sm text-muted">
-            Visit ESPACE FITNESS SM reception for membership and coaching info. You can also contact us on Instagram.
-          </p>
+          <div className="mt-3 space-y-2 text-sm text-muted">
+            <p>Visit ESPACE FITNESS SM reception for membership and coaching info.</p>
+            <p>
+              Phone:{" "}
+              <a href={`tel:${phoneNumber}`} className="font-semibold text-paper underline-offset-4 hover:underline">
+                {phoneNumber}
+              </a>
+            </p>
+            <p>Address: {fullAddress}</p>
+          </div>
           <div className="mt-5 flex flex-wrap gap-3">
             <a
               href={instagramUrl}
