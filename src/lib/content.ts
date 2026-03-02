@@ -1,5 +1,6 @@
 import { getSessionUser } from "@/lib/auth/session";
 import { defaultGallery, defaultSettings } from "@/lib/default-content";
+import { normalizeMediaImageUrl } from "@/lib/media-url";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { GalleryImage, Notification, SiteSettings } from "@/lib/types";
 
@@ -18,11 +19,16 @@ export async function getPublicContent() {
 
   const settings = (settingsResult.data as SiteSettings | null) ?? defaultSettings;
   const galleryRaw = galleryResult.data as GalleryImage[] | null;
+  const galleryNormalized =
+    galleryRaw?.map((item) => ({
+      ...item,
+      image_url: normalizeMediaImageUrl(item.image_url),
+    })) ?? null;
   const notifications = (notificationsResult.data as Notification[] | null) ?? [];
 
   return {
     settings,
-    gallery: galleryRaw && galleryRaw.length > 0 ? galleryRaw : defaultGallery,
+    gallery: galleryNormalized && galleryNormalized.length > 0 ? galleryNormalized : defaultGallery,
     notifications,
     isAdmin: sessionUser?.role === "admin",
     hasSession: Boolean(sessionUser),

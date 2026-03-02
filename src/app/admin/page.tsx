@@ -1,5 +1,6 @@
 import { requireAdmin } from "@/lib/admin";
 import { defaultSettings } from "@/lib/default-content";
+import { normalizeMediaImageUrl } from "@/lib/media-url";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { CustomerTrackerRow, GalleryImage, Notification, SiteSettings } from "@/lib/types";
 
@@ -19,7 +20,10 @@ export default async function AdminPage() {
   ]);
 
   const settings = (settingsResult.data as SiteSettings | null) ?? defaultSettings;
-  const gallery = (galleryResult.data as GalleryImage[] | null) ?? [];
+  const gallery = ((galleryResult.data as GalleryImage[] | null) ?? []).map((item) => ({
+    ...item,
+    image_url: normalizeMediaImageUrl(item.image_url),
+  }));
   const notifications = (notificationsResult.data as Notification[] | null) ?? [];
   const customers = (customersResult.data as CustomerTrackerRow[] | null) ?? [];
 

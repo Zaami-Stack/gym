@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { getSessionUser } from "@/lib/auth/session";
+import { isHttpImageUrl, normalizeMediaImageUrl } from "@/lib/media-url";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { GalleryImage } from "@/lib/types";
 
@@ -24,7 +25,12 @@ export async function GET() {
     return NextResponse.json({ message: error.message || "Failed to fetch gallery." }, { status: 500 });
   }
 
-  return NextResponse.json({ gallery: data ?? [] }, { status: 200 });
+  const gallery = ((data as GalleryImage[] | null) ?? []).map((item) => ({
+    ...item,
+    image_url: normalizeMediaImageUrl(item.image_url),
+  }));
+
+  return NextResponse.json({ gallery }, { status: 200 });
 }
 
 export async function POST(request: Request) {
@@ -40,12 +46,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: "Invalid JSON body." }, { status: 400 });
   }
 
-  const image_url = String(body.image_url || "").trim();
+  const image_url = normalizeMediaImageUrl(String(body.image_url || ""));
   const alt_text = String(body.alt_text || "").trim();
   const display_order = Number(body.display_order);
 
   if (!image_url) {
     return NextResponse.json({ message: "Image URL is required." }, { status: 400 });
+  }
+  if (!isHttpImageUrl(image_url)) {
+    return NextResponse.json({ message: "Image URL must be a valid http(s) link." }, { status: 400 });
   }
   if (!Number.isFinite(display_order)) {
     return NextResponse.json({ message: "Display order must be a number." }, { status: 400 });
@@ -66,7 +75,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: error.message || "Failed to add gallery image." }, { status: 500 });
   }
 
-  return NextResponse.json({ image: data }, { status: 201 });
+  return NextResponse.json(
+    {
+      image: {
+        ...data,
+        image_url: normalizeMediaImageUrl(data.image_url),
+      },
+    },
+    { status: 201 },
+  );
 }
 
 export async function PATCH(request: Request) {
