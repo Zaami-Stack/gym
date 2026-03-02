@@ -89,8 +89,8 @@ export default function AdminLoginPage() {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-lg items-center px-4 py-8">
-      <section className="animate-fade-up w-full rounded-2xl border border-line bg-panel/80 p-7">
-        <p className="font-heading animate-float text-5xl text-accent">ESPACE FITNESS SM</p>
+      <section className="w-full rounded-2xl border border-line bg-panel/80 p-7">
+        <p className="font-heading text-5xl text-accent">ESPACE FITNESS SM</p>
 
         <div className="mt-6 inline-flex rounded-full border border-line bg-black/30 p-1">
           <button
@@ -115,7 +115,7 @@ export default function AdminLoginPage() {
           </button>
         </div>
 
-        <form className="animate-fade-up-delay-1 mt-4 space-y-4" onSubmit={handleSubmit}>
+        <form className="mt-4 space-y-4" onSubmit={handleSubmit}>
           {mode === "signup" ? (
             <label className="block">
               <span className="mb-1 block text-xs uppercase tracking-wider text-muted">Name</span>
@@ -152,7 +152,7 @@ export default function AdminLoginPage() {
           <button
             type="submit"
             disabled={busy}
-            className="pulse-accent w-full rounded-full bg-accent-2 px-4 py-2 text-sm font-semibold text-paper hover:bg-accent-2/85 disabled:opacity-60"
+            className="w-full rounded-full bg-accent-2 px-4 py-2 text-sm font-semibold text-paper hover:bg-accent-2/85 disabled:opacity-60"
           >
             {busy ? "Please wait..." : mode === "signup" ? "Create account" : "Sign in"}
           </button>

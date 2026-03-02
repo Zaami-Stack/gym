@@ -34,14 +34,6 @@ const womenProgram = [
   },
 ];
 
-const womenProgramFlat = womenProgram.flatMap((item) =>
-  item.sessions.map((session) => ({
-    day: item.day,
-    time: session.time,
-    className: session.className,
-  })),
-);
-
 const womenAvailability = [
   { day: "Mardi", hours: "14h30 - 20h30" },
   { day: "Jeudi", hours: "14h30 - 20h30" },
@@ -58,14 +50,22 @@ const menProgram = [
   { day: "Dimanche", hours: "10:00 - 14:00", course: "" },
 ];
 
-const classHours = [
-  { day: "Monday", time: "08:00 - 22:00" },
-  { day: "Tuesday", time: "08:00 - 14:00" },
-  { day: "Wednesday", time: "08:00 - 22:00" },
-  { day: "Thursday", time: "08:00 - 14:00" },
-  { day: "Friday", time: "08:00 - 22:00" },
-  { day: "Saturday", time: "14:00 - 18:00" },
-  { day: "Sunday", time: "10:00 - 14:00" },
+const womenProgramFlat = womenProgram.flatMap((item) =>
+  item.sessions.map((session) => ({
+    day: item.day,
+    time: session.time,
+    className: session.className,
+  })),
+);
+
+const openingHours = [
+  { day: "Lundi", hours: "08:00 - 22:00" },
+  { day: "Mardi", hours: "08:00 - 14:00" },
+  { day: "Mercredi", hours: "08:00 - 22:00" },
+  { day: "Jeudi", hours: "08:00 - 14:00" },
+  { day: "Vendredi", hours: "08:00 - 22:00" },
+  { day: "Samedi", hours: "14:00 - 18:00" },
+  { day: "Dimanche", hours: "10:00 - 14:00" },
 ];
 
 export const dynamic = "force-dynamic";
@@ -75,8 +75,42 @@ export default async function Home() {
 
   return (
     <main className="min-h-screen pb-16">
+      <nav className="sticky top-0 z-40 border-b border-line bg-ink/90 backdrop-blur">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3 md:px-8">
+          <p className="font-heading text-3xl tracking-[0.14em] text-accent md:text-4xl">ESPACE FITNESS SM</p>
+          <div className="hidden items-center gap-4 text-sm text-muted md:flex">
+            <a href="#programs" className="transition hover:text-paper">
+              Programmes
+            </a>
+            <a href="#gallery" className="transition hover:text-paper">
+              Galerie
+            </a>
+            <a href="#visit" className="transition hover:text-paper">
+              Tarifs
+            </a>
+          </div>
+          {isAdmin ? (
+            <Link
+              href="/admin"
+              className="rounded-full border border-accent-2/70 bg-accent-2/20 px-4 py-2 text-sm font-semibold text-paper transition hover:bg-accent-2/30"
+            >
+              Dashboard
+            </Link>
+          ) : hasSession ? (
+            <SignOutButton className="rounded-full border border-paper/30 px-4 py-2 text-sm text-paper transition hover:border-accent-2 hover:text-paper disabled:opacity-60" />
+          ) : (
+            <Link
+              href="/admin/login"
+              className="rounded-full border border-paper/30 px-4 py-2 text-sm text-paper transition hover:border-accent-2 hover:text-paper"
+            >
+              Sign in / Sign up
+            </Link>
+          )}
+        </div>
+      </nav>
+
       {notifications.length > 0 ? (
-        <div className="animate-fade-up border-y border-line bg-black/40 px-4 py-2 backdrop-blur">
+        <div className="border-y border-line bg-black/40 px-4 py-2 backdrop-blur">
           <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-3 text-sm text-accent">
             <p className="font-heading text-2xl text-accent">Alerts</p>
             {notifications.map((notification) => (
@@ -93,52 +127,29 @@ export default async function Home() {
 
       <section className="px-4 pt-4 md:px-8">
         <div
-          className="animate-fade-up mx-auto min-h-[74vh] max-w-7xl overflow-hidden rounded-3xl border border-line/60"
+          className="mx-auto min-h-[70vh] max-w-7xl overflow-hidden rounded-3xl border border-line/60"
           style={{
-            backgroundImage: `linear-gradient(110deg, rgb(2 6 12 / 92%) 0%, rgb(2 6 12 / 68%) 40%, rgb(2 6 12 / 84%) 100%), url(${settings.hero_image_url})`,
+            backgroundImage: `linear-gradient(110deg, rgb(2 10 29 / 90%) 0%, rgb(2 10 29 / 66%) 38%, rgb(2 10 29 / 86%) 100%), url(${settings.hero_image_url})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
           }}
         >
-          <div className="flex h-full flex-col px-6 pb-10 pt-6 md:px-12 md:pb-12 md:pt-8">
-            <header className="flex flex-wrap items-center justify-between gap-4">
-              <p className="font-heading animate-float text-4xl tracking-[0.2em] text-accent md:text-5xl">
-                ESPACE FITNESS SM
-              </p>
-              {isAdmin ? (
-                <Link
-                  href="/admin"
-                  className="pulse-accent rounded-full border border-accent-2/70 bg-accent-2/15 px-4 py-2 text-sm text-paper transition hover:border-accent-2 hover:text-paper"
-                >
-                  Dashboard
-                </Link>
-              ) : hasSession ? (
-                <SignOutButton className="rounded-full border border-paper/30 px-4 py-2 text-sm text-paper transition hover:border-accent hover:text-accent disabled:opacity-60" />
-              ) : (
-                <Link
-                  href="/admin/login"
-                  className="rounded-full border border-paper/30 px-4 py-2 text-sm text-paper transition hover:border-accent hover:text-accent"
-                >
-                  Sign in / Sign up
-                </Link>
-              )}
-            </header>
-
-            <div className="animate-fade-up-delay-1 mt-12 max-w-3xl md:mt-24">
+          <div className="flex h-full flex-col justify-end px-6 pb-10 pt-12 md:px-12 md:pb-12 md:pt-16">
+            <div className="max-w-3xl">
               <h1 className="font-heading text-5xl leading-none text-paper md:text-7xl">{settings.hero_title}</h1>
               <p className="mt-5 max-w-2xl text-base text-muted md:text-lg">{settings.hero_subtitle}</p>
-              <div className="animate-fade-up-delay-2 mt-8 flex flex-wrap gap-3">
+              <div className="mt-8 flex flex-wrap gap-3">
                 <a
                   href="#programs"
-                  className="pulse-accent rounded-full bg-accent-2 px-6 py-3 font-semibold text-paper transition hover:bg-accent-2/85"
+                  className="rounded-full bg-accent-2 px-6 py-3 font-semibold text-paper transition hover:bg-accent-2/85"
                 >
-                  Explore Programs
+                  Voir Programmes
                 </a>
                 <a
                   href="#visit"
-                  className="rounded-full border border-accent-2/70 bg-accent-2/10 px-6 py-3 font-semibold text-paper transition hover:border-accent-2 hover:bg-accent-2/20"
+                  className="rounded-full border border-accent-2/70 bg-accent-2/10 px-6 py-3 font-semibold text-paper transition hover:bg-accent-2/20"
                 >
-                  Visit Today
+                  Voir Tarifs
                 </a>
               </div>
             </div>
@@ -149,7 +160,7 @@ export default async function Home() {
       <section id="programs" className="mx-auto mt-16 max-w-7xl px-4 md:px-8">
         <h2 className="font-heading text-5xl text-paper">Programmes</h2>
         <div className="mt-6 grid gap-5 lg:grid-cols-2">
-          <article className="hover-lift animate-fade-up rounded-2xl border border-line bg-panel/70 p-6 backdrop-blur">
+          <article className="rounded-2xl border border-line bg-panel/70 p-6 backdrop-blur">
             <h3 className="font-heading text-4xl text-accent">Programme Femmes</h3>
             <div className="mt-4 overflow-x-auto">
               <table className="min-w-full text-left text-sm">
@@ -180,7 +191,7 @@ export default async function Home() {
             </ul>
           </article>
 
-          <article className="hover-lift animate-fade-up rounded-2xl border border-line bg-panel/70 p-6 backdrop-blur">
+          <article className="rounded-2xl border border-line bg-panel/70 p-6 backdrop-blur">
             <h3 className="font-heading text-4xl text-accent">Programme Hommes</h3>
             <div className="mt-4 overflow-x-auto">
               <table className="min-w-full text-left text-sm">
@@ -204,6 +215,28 @@ export default async function Home() {
             </div>
           </article>
         </div>
+
+        <article className="mt-5 rounded-2xl border border-line bg-black/35 p-6 backdrop-blur">
+          <h3 className="font-heading text-4xl text-paper">Opening Hours</h3>
+          <div className="mt-3 overflow-x-auto">
+            <table className="min-w-full text-left text-sm">
+              <thead>
+                <tr className="border-b border-line text-xs uppercase tracking-wider text-muted">
+                  <th className="px-2 py-2">Day</th>
+                  <th className="px-2 py-2">Hours</th>
+                </tr>
+              </thead>
+              <tbody>
+                {openingHours.map((item) => (
+                  <tr key={item.day} className="border-b border-line/60 last:border-b-0">
+                    <td className="px-2 py-2 font-semibold text-paper">{item.day}</td>
+                    <td className="px-2 py-2 text-muted">{item.hours}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </article>
       </section>
 
       <section id="gallery" className="mx-auto mt-16 max-w-7xl px-4 md:px-8">
@@ -212,11 +245,11 @@ export default async function Home() {
         </div>
         <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {gallery.map((image) => (
-            <figure key={image.id} className="hover-lift animate-fade-up overflow-hidden rounded-2xl border border-line bg-panel/50">
+            <figure key={image.id} className="overflow-hidden rounded-2xl border border-line bg-panel/50">
               <img
                 src={image.image_url}
                 alt={image.alt_text || "Gym image"}
-                className="h-64 w-full object-cover transition duration-500 hover:scale-105"
+                className="h-64 w-full object-cover transition duration-300 hover:scale-105"
               />
               <figcaption className="px-4 py-3 text-xs text-muted">{image.alt_text || "ESPACE FITNESS SM atmosphere"}</figcaption>
             </figure>
@@ -224,8 +257,8 @@ export default async function Home() {
         </div>
       </section>
 
-      <section id="visit" className="mx-auto mt-16 grid max-w-7xl gap-5 px-4 md:grid-cols-[1.3fr_1fr] md:px-8">
-        <article className="hover-lift animate-fade-up rounded-2xl border border-line bg-black/35 p-7 backdrop-blur">
+      <section id="visit" className="mx-auto mt-16 grid max-w-7xl gap-5 px-4 md:px-8">
+        <article className="rounded-2xl border border-line bg-black/35 p-7 backdrop-blur">
           <h2 className="font-heading text-5xl text-paper">Membership Starts at $39/month</h2>
           <p className="mt-4 max-w-xl text-sm leading-6 text-muted">
             Flexible plans, no hidden fees, and full access to all training zones. Ask front-desk for personal coaching
@@ -241,18 +274,6 @@ export default async function Home() {
               <p className="text-xs text-muted">Days open</p>
             </div>
           </div>
-        </article>
-
-        <article className="hover-lift animate-fade-up rounded-2xl border border-line bg-panel/70 p-7">
-          <h3 className="font-heading text-4xl text-paper">Opening Hours</h3>
-          <ul className="mt-4 space-y-2">
-            {classHours.map((item) => (
-              <li key={item.day} className="flex items-center justify-between border-b border-line/70 pb-2 text-sm">
-                <span className="text-muted">{item.day}</span>
-                <span className="font-semibold text-paper">{item.time}</span>
-              </li>
-            ))}
-          </ul>
         </article>
       </section>
     </main>
