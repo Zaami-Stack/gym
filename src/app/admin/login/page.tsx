@@ -91,7 +91,6 @@ export default function AdminLoginPage() {
     <main className="mx-auto flex min-h-screen max-w-lg items-center px-4 py-8">
       <section className="animate-fade-up w-full rounded-2xl border border-line bg-panel/80 p-7">
         <p className="font-heading animate-float text-5xl text-accent">ESPACE FITNESS SM</p>
-        <p className="mt-2 text-sm text-muted">Sign in as admin to manage the dashboard, or sign up as user.</p>
 
         <div className="mt-6 inline-flex rounded-full border border-line bg-black/30 p-1">
           <button
@@ -100,7 +99,7 @@ export default function AdminLoginPage() {
               setMode("signin");
               setError("");
             }}
-            className={`rounded-full px-4 py-2 text-sm ${mode === "signin" ? "bg-accent text-black" : "text-muted"}`}
+            className={`rounded-full px-4 py-2 text-sm ${mode === "signin" ? "bg-accent-2 text-paper" : "text-muted"}`}
           >
             Sign in
           </button>
@@ -153,7 +152,7 @@ export default function AdminLoginPage() {
           <button
             type="submit"
             disabled={busy}
-            className="pulse-accent w-full rounded-full bg-accent px-4 py-2 text-sm font-semibold text-black hover:bg-accent/85 disabled:opacity-60"
+            className="pulse-accent w-full rounded-full bg-accent-2 px-4 py-2 text-sm font-semibold text-paper hover:bg-accent-2/85 disabled:opacity-60"
           >
             {busy ? "Please wait..." : mode === "signup" ? "Create account" : "Sign in"}
           </button>

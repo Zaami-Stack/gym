@@ -364,7 +364,7 @@ export default function AdminDashboard({
             <button
               type="submit"
               disabled={busyAction === "save-hero"}
-              className="rounded-full bg-accent px-5 py-2 text-sm font-semibold text-black hover:bg-accent/85 disabled:opacity-60"
+              className="rounded-full bg-accent-2 px-5 py-2 text-sm font-semibold text-paper hover:bg-accent-2/85 disabled:opacity-60"
             >
               {busyAction === "save-hero" ? "Saving..." : "Save Hero Section"}
             </button>
@@ -396,7 +396,7 @@ export default function AdminDashboard({
             <button
               type="submit"
               disabled={busyAction === "add-notification"}
-              className="rounded-full bg-accent px-5 py-2 text-sm font-semibold text-black hover:bg-accent/85 disabled:opacity-60"
+              className="rounded-full bg-accent-2 px-5 py-2 text-sm font-semibold text-paper hover:bg-accent-2/85 disabled:opacity-60"
             >
               {busyAction === "add-notification" ? "Adding..." : "Add Notification"}
             </button>
@@ -471,7 +471,7 @@ export default function AdminDashboard({
             <button
               type="submit"
               disabled={busyAction === "add-gallery"}
-              className="rounded-full bg-accent px-5 py-2 text-sm font-semibold text-black hover:bg-accent/85 disabled:opacity-60"
+              className="rounded-full bg-accent-2 px-5 py-2 text-sm font-semibold text-paper hover:bg-accent-2/85 disabled:opacity-60"
             >
               {busyAction === "add-gallery" ? "Adding..." : "Add Gallery Image"}
             </button>

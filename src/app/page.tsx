@@ -69,7 +69,7 @@ export default async function Home() {
               {isAdmin ? (
                 <Link
                   href="/admin"
-                  className="pulse-accent rounded-full border border-accent/70 bg-accent/10 px-4 py-2 text-sm text-paper transition hover:border-accent hover:text-accent"
+                  className="pulse-accent rounded-full border border-accent-2/70 bg-accent-2/15 px-4 py-2 text-sm text-paper transition hover:border-accent-2 hover:text-paper"
                 >
                   Dashboard
                 </Link>
@@ -91,13 +91,13 @@ export default async function Home() {
               <div className="animate-fade-up-delay-2 mt-8 flex flex-wrap gap-3">
                 <a
                   href="#programs"
-                  className="pulse-accent rounded-full bg-accent px-6 py-3 font-semibold text-black transition hover:bg-accent/85"
+                  className="pulse-accent rounded-full bg-accent-2 px-6 py-3 font-semibold text-paper transition hover:bg-accent-2/85"
                 >
                   Explore Programs
                 </a>
                 <a
                   href="#visit"
-                  className="rounded-full border border-accent-2/70 bg-accent-2/10 px-6 py-3 font-semibold text-paper transition hover:border-accent hover:text-accent"
+                  className="rounded-full border border-accent-2/70 bg-accent-2/10 px-6 py-3 font-semibold text-paper transition hover:border-accent-2 hover:bg-accent-2/20"
                 >
                   Visit Today
                 </a>
@@ -119,7 +119,6 @@ export default async function Home() {
       <section id="gallery" className="mx-auto mt-16 max-w-7xl px-4 md:px-8">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <h2 className="font-heading text-5xl text-paper">Gym Gallery</h2>
-          <p className="max-w-md text-sm text-muted">Admin can update these photos anytime from the dashboard.</p>
         </div>
         <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {gallery.map((image) => (
