@@ -1,11 +1,15 @@
 -- Run this script in Supabase SQL Editor.
--- It creates tables, RLS policies, admin role checks, and storage setup.
+-- Admin access is based on Auth email/password + email allowlist in public.admin_emails.
 
 create extension if not exists pgcrypto;
 
-create table if not exists public.profiles (
-  id uuid primary key references auth.users(id) on delete cascade,
-  role text not null default 'member' check (role in ('admin', 'member')),
+-- Cleanup from previous role-based setup, safe for reruns.
+drop trigger if exists on_auth_user_created on auth.users;
+drop function if exists public.handle_new_user();
+drop table if exists public.profiles;
+
+create table if not exists public.admin_emails (
+  email text primary key check (email = lower(email)),
   created_at timestamptz not null default now()
 );
 
@@ -55,72 +59,22 @@ stable
 as $$
   select exists (
     select 1
-    from public.profiles
-    where id = auth.uid() and role = 'admin'
+    from public.admin_emails
+    where email = lower(coalesce(auth.jwt() ->> 'email', ''))
   );
 $$;
 
-create or replace function public.handle_new_user()
-returns trigger
-language plpgsql
-security definer
-set search_path = public
-as $$
-begin
-  insert into public.profiles (id, role)
-  values (new.id, 'member')
-  on conflict (id) do nothing;
-  return new;
-end;
-$$;
-
-drop trigger if exists on_auth_user_created on auth.users;
-create trigger on_auth_user_created
-after insert on auth.users
-for each row
-execute function public.handle_new_user();
-
-alter table public.profiles enable row level security;
+alter table public.admin_emails enable row level security;
 alter table public.site_settings enable row level security;
 alter table public.notifications enable row level security;
 alter table public.gallery_images enable row level security;
 
-drop policy if exists "Users can view own profile" on public.profiles;
-create policy "Users can view own profile"
-on public.profiles
+drop policy if exists "Authenticated users can check own admin email" on public.admin_emails;
+create policy "Authenticated users can check own admin email"
+on public.admin_emails
 for select
 to authenticated
-using (id = auth.uid());
-
-drop policy if exists "Users can insert own profile" on public.profiles;
-create policy "Users can insert own profile"
-on public.profiles
-for insert
-to authenticated
-with check (id = auth.uid());
-
-drop policy if exists "Users can update own profile" on public.profiles;
-create policy "Users can update own profile"
-on public.profiles
-for update
-to authenticated
-using (id = auth.uid())
-with check (id = auth.uid());
-
-drop policy if exists "Admins can view all profiles" on public.profiles;
-create policy "Admins can view all profiles"
-on public.profiles
-for select
-to authenticated
-using (public.is_admin());
-
-drop policy if exists "Admins can manage all profiles" on public.profiles;
-create policy "Admins can manage all profiles"
-on public.profiles
-for all
-to authenticated
-using (public.is_admin())
-with check (public.is_admin());
+using (email = lower(coalesce(auth.jwt() ->> 'email', '')));
 
 drop policy if exists "Public can read site settings" on public.site_settings;
 create policy "Public can read site settings"
@@ -209,5 +163,6 @@ for delete
 to authenticated
 using (bucket_id = 'media' and public.is_admin());
 
--- After creating your admin user in Auth:
--- update public.profiles set role = 'admin' where id = 'USER_UUID_HERE';
+-- Add one or more admin emails (must be lowercase and match Auth user email).
+-- Example:
+-- insert into public.admin_emails(email) values ('admin@example.com') on conflict do nothing;

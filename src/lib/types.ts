@@ -1,8 +1,5 @@
-export type UserRole = "admin" | "member";
-
-export type Profile = {
-  id: string;
-  role: UserRole;
+export type AdminEmail = {
+  email: string;
   created_at: string;
 };
 

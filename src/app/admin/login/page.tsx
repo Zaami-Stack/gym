@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 const roleErrorMessage =
-  "This account is not an admin. Open Supabase SQL editor and set profiles.role = 'admin' for this user.";
+  "This account is not an admin. Add this email to public.admin_emails in Supabase SQL Editor.";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -58,13 +58,19 @@ export default function AdminLoginPage() {
         throw new Error("Authentication succeeded but user session was not found.");
       }
 
-      const { data: profile, error: profileError } = await client
-        .from("profiles")
-        .select("role")
-        .eq("id", user.id)
+      const normalizedEmail = user.email?.toLowerCase();
+      if (!normalizedEmail) {
+        await client.auth.signOut();
+        throw new Error(roleErrorMessage);
+      }
+
+      const { data: adminRow, error: adminError } = await client
+        .from("admin_emails")
+        .select("email")
+        .eq("email", normalizedEmail)
         .maybeSingle();
 
-      if (profileError || profile?.role !== "admin") {
+      if (adminError || !adminRow) {
         await client.auth.signOut();
         throw new Error(roleErrorMessage);
       }

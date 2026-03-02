@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
-import type { Profile } from "@/lib/types";
 
 export async function requireAdmin() {
   const supabase = await createClient();
@@ -14,15 +13,19 @@ export async function requireAdmin() {
     redirect("/admin/login");
   }
 
-  const { data: profileRow, error: profileError } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
+  const normalizedEmail = user.email?.toLowerCase();
+
+  if (!normalizedEmail) {
+    redirect("/admin/login?error=not_admin");
+  }
+
+  const { data: adminRow, error: adminError } = await supabase
+    .from("admin_emails")
+    .select("email")
+    .eq("email", normalizedEmail)
     .maybeSingle();
 
-  const profile = profileRow as Pick<Profile, "role"> | null;
-
-  if (profileError || profile?.role !== "admin") {
+  if (adminError || !adminRow) {
     redirect("/admin/login?error=not_admin");
   }
 

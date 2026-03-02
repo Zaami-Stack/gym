@@ -12,7 +12,7 @@ Fullstack gym website with an admin dashboard.
   - Update hero content and hero image
   - Add/enable/disable/delete notifications
   - Add/delete/reorder gallery images
-- Role-based access (`admin` vs `member`) using Supabase Auth + RLS policies
+- Email/password login with admin email allowlist using Supabase Auth + RLS policies
 - Supabase Storage uploads for hero/gallery images (bucket: `media`)
 
 ## Tech
@@ -25,16 +25,15 @@ Fullstack gym website with an admin dashboard.
 
 1. Create a new Supabase project.
 2. In `SQL Editor`, run [`supabase/schema.sql`](./supabase/schema.sql).
-3. In `Authentication > Users`, create a user for admin login (email + password).
-4. In `SQL Editor`, set that user as admin:
+3. In `SQL Editor`, add your admin login email to the allowlist:
 
 ```sql
-update public.profiles
-set role = 'admin'
-where id = 'YOUR_AUTH_USER_UUID';
+insert into public.admin_emails(email)
+values ('admin@example.com')
+on conflict do nothing;
 ```
 
-You can copy the UUID from `Authentication > Users`.
+4. In `Authentication > Users`, create a user with the same email and a password.
 
 ## 2) Configure Environment Variables
 
@@ -78,4 +77,4 @@ Your dashboard and public site will use Supabase data on Vercel.
 
 - The admin dashboard relies on Supabase RLS policies from `supabase/schema.sql`.
 - Public visitors can only read published content.
-- Only users with `profiles.role = 'admin'` can update site content.
+- Only authenticated users whose email exists in `public.admin_emails` can update site content.
