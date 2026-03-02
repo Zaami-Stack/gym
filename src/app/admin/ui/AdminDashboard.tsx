@@ -302,7 +302,10 @@ export default function AdminDashboard({
           <p className="mt-1 text-xs text-muted">Use this dashboard to control the live gym website content.</p>
         </div>
         <div className="flex w-full flex-wrap gap-2 sm:w-auto">
-          <Link href="/" className="rounded-full border border-line px-4 py-2 text-sm text-paper hover:border-accent">
+          <Link
+            href="/"
+            className="rounded-full border border-line px-4 py-2 text-sm text-paper transition hover:border-accent"
+          >
             View Website
           </Link>
           <button
@@ -364,7 +367,7 @@ export default function AdminDashboard({
             <button
               type="submit"
               disabled={busyAction === "save-hero"}
-              className="rounded-full bg-accent-2 px-5 py-2 text-sm font-semibold text-paper hover:bg-accent-2/85 disabled:opacity-60"
+              className="w-full rounded-full bg-accent-2 px-5 py-2 text-sm font-semibold text-paper hover:bg-accent-2/85 disabled:opacity-60 sm:w-auto"
             >
               {busyAction === "save-hero" ? "Saving..." : "Save Hero Section"}
             </button>
@@ -396,7 +399,7 @@ export default function AdminDashboard({
             <button
               type="submit"
               disabled={busyAction === "add-notification"}
-              className="rounded-full bg-accent-2 px-5 py-2 text-sm font-semibold text-paper hover:bg-accent-2/85 disabled:opacity-60"
+              className="w-full rounded-full bg-accent-2 px-5 py-2 text-sm font-semibold text-paper hover:bg-accent-2/85 disabled:opacity-60 sm:w-auto"
             >
               {busyAction === "add-notification" ? "Adding..." : "Add Notification"}
             </button>
@@ -410,7 +413,7 @@ export default function AdminDashboard({
                     type="button"
                     onClick={() => handleToggleNotification(item.id, !item.is_active)}
                     disabled={busyAction === `toggle-notification-${item.id}`}
-                    className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                    className={`rounded-full px-3 py-1 text-xs font-semibold sm:text-sm ${
                       item.is_active
                         ? "border border-accent/50 text-accent"
                         : "border border-muted/40 text-muted hover:border-accent hover:text-accent"
@@ -422,7 +425,7 @@ export default function AdminDashboard({
                     type="button"
                     onClick={() => handleDeleteNotification(item.id)}
                     disabled={busyAction === `delete-notification-${item.id}`}
-                    className="rounded-full border border-accent-2/60 px-3 py-1 text-xs font-semibold text-accent-2 hover:border-accent-2"
+                    className="rounded-full border border-accent-2/60 px-3 py-1 text-xs font-semibold text-accent-2 hover:border-accent-2 sm:text-sm"
                   >
                     Delete
                   </button>
@@ -471,7 +474,7 @@ export default function AdminDashboard({
             <button
               type="submit"
               disabled={busyAction === "add-gallery"}
-              className="rounded-full bg-accent-2 px-5 py-2 text-sm font-semibold text-paper hover:bg-accent-2/85 disabled:opacity-60"
+              className="w-full rounded-full bg-accent-2 px-5 py-2 text-sm font-semibold text-paper hover:bg-accent-2/85 disabled:opacity-60 sm:w-auto"
             >
               {busyAction === "add-gallery" ? "Adding..." : "Add Gallery Image"}
             </button>
@@ -494,13 +497,13 @@ export default function AdminDashboard({
                         [item.id]: event.target.value,
                       }))
                     }
-                    className="w-20 rounded-md border border-line bg-black/30 px-2 py-1 text-xs text-paper"
+                    className="w-20 rounded-md border border-line bg-black/30 px-2 py-1 text-xs text-paper sm:text-sm"
                   />
                   <button
                     type="button"
                     onClick={() => handleSaveGalleryOrder(item.id)}
                     disabled={busyAction === `order-gallery-${item.id}`}
-                    className="rounded-full border border-accent/50 px-3 py-1 text-xs font-semibold text-accent hover:border-accent"
+                    className="rounded-full border border-accent/50 px-3 py-1 text-xs font-semibold text-accent hover:border-accent sm:text-sm"
                   >
                     Save order
                   </button>
@@ -509,7 +512,7 @@ export default function AdminDashboard({
                   type="button"
                   onClick={() => handleDeleteGalleryImage(item.id)}
                   disabled={busyAction === `delete-gallery-${item.id}`}
-                  className="rounded-full border border-accent-2/60 px-3 py-1 text-xs font-semibold text-accent-2 hover:border-accent-2"
+                  className="rounded-full border border-accent-2/60 px-3 py-1 text-xs font-semibold text-accent-2 hover:border-accent-2 sm:text-sm"
                 >
                   Delete image
                 </button>

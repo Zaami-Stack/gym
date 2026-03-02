@@ -1,7 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
-import Link from "next/link";
 
-import SignOutButton from "@/components/SignOutButton";
+import MainNav from "@/components/MainNav";
 import { getPublicContent } from "@/lib/content";
 
 const womenProgram = [
@@ -75,83 +74,9 @@ export const dynamic = "force-dynamic";
 export default async function Home() {
   const { settings, gallery, notifications, isAdmin, hasSession } = await getPublicContent();
 
-  const authAction = isAdmin ? (
-    <Link
-      href="/admin"
-      className="rounded-full border border-accent-2/70 bg-accent-2/20 px-4 py-2 text-sm font-semibold text-paper transition hover:bg-accent-2/30"
-    >
-      Dashboard
-    </Link>
-  ) : hasSession ? (
-    <SignOutButton className="rounded-full border border-paper/30 px-4 py-2 text-sm text-paper transition hover:border-accent-2 hover:text-paper disabled:opacity-60" />
-  ) : (
-    <Link
-      href="/admin/login"
-      className="rounded-full border border-paper/30 px-4 py-2 text-sm text-paper transition hover:border-accent-2 hover:text-paper"
-    >
-      Sign in / Sign up
-    </Link>
-  );
-
   return (
     <main className="min-h-screen pb-16">
-      <nav className="sticky top-0 z-40 border-b border-line bg-ink/90 backdrop-blur">
-        <div className="mx-auto max-w-7xl px-4 py-3 md:px-8">
-          <div className="flex items-center justify-between gap-3">
-            <p className="font-heading text-2xl tracking-[0.08em] text-accent sm:text-3xl md:text-4xl">ESPACE FITNESS SM</p>
-            <div className="flex items-center gap-2">
-              <div className="hidden md:block">{authAction}</div>
-              <details className="relative md:hidden">
-                <summary className="list-none rounded-lg border border-paper/30 bg-white/5 px-3 py-2 text-sm text-paper marker:content-none">
-                  Menu
-                </summary>
-                <div className="absolute right-0 mt-2 w-56 rounded-xl border border-line bg-ink p-3 shadow-2xl">
-                  <div className="flex flex-col gap-2 text-sm text-muted">
-                    <a href="#programs" className="rounded-md px-2 py-1 transition hover:bg-white/5 hover:text-paper">
-                      Programmes
-                    </a>
-                    <a href="#gallery" className="rounded-md px-2 py-1 transition hover:bg-white/5 hover:text-paper">
-                      Galerie
-                    </a>
-                    <a href="#visit" className="rounded-md px-2 py-1 transition hover:bg-white/5 hover:text-paper">
-                      Tarifs
-                    </a>
-                    <a href="#contact" className="rounded-md px-2 py-1 transition hover:bg-white/5 hover:text-paper">
-                      Contact
-                    </a>
-                    <a
-                      href={instagramUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="rounded-md px-2 py-1 transition hover:bg-white/5 hover:text-paper"
-                    >
-                      Instagram
-                    </a>
-                    <div className="pt-2">{authAction}</div>
-                  </div>
-                </div>
-              </details>
-            </div>
-          </div>
-          <div className="mt-3 hidden items-center gap-4 text-sm text-muted md:flex">
-            <a href="#programs" className="transition hover:text-paper">
-              Programmes
-            </a>
-            <a href="#gallery" className="transition hover:text-paper">
-              Galerie
-            </a>
-            <a href="#visit" className="transition hover:text-paper">
-              Tarifs
-            </a>
-            <a href="#contact" className="transition hover:text-paper">
-              Contact
-            </a>
-            <a href={instagramUrl} target="_blank" rel="noreferrer" className="transition hover:text-paper">
-              Instagram
-            </a>
-          </div>
-        </div>
-      </nav>
+      <MainNav isAdmin={isAdmin} hasSession={hasSession} instagramUrl={instagramUrl} />
 
       {notifications.length > 0 ? (
         <div className="border-y border-line bg-black/40 px-4 py-2 backdrop-blur">
