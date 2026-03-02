@@ -16,6 +16,9 @@ const bodyFont = Space_Grotesk({
 export const metadata: Metadata = {
   title: "ESPACE FITNESS SM",
   description: "A modern gym website with admin-managed content and dashboard.",
+  icons: {
+    icon: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({
