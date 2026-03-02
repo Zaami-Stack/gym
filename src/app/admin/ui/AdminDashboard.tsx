@@ -92,6 +92,9 @@ export default function AdminDashboard({
   const [noticeMessage, setNoticeMessage] = useState("");
   const [noticeActive, setNoticeActive] = useState(true);
 
+  const [heroFile, setHeroFile] = useState<File | null>(null);
+  const [heroFileInputKey, setHeroFileInputKey] = useState(0);
+
   const [galleryFile, setGalleryFile] = useState<File | null>(null);
   const [galleryFileInputKey, setGalleryFileInputKey] = useState(0);
   const [galleryAlt, setGalleryAlt] = useState("");
@@ -119,17 +122,27 @@ export default function AdminDashboard({
     setStatus(null);
 
     try {
+      let heroImageUrl = settings.hero_image_url.trim();
+      if (heroFile) {
+        heroImageUrl = await uploadImageFile(heroFile);
+      }
+      if (!heroImageUrl) {
+        throw new Error("Provide a hero image URL or upload an image file.");
+      }
+
       const data = await requestJson("/api/admin/settings", {
         method: "PATCH",
         body: JSON.stringify({
           hero_title: settings.hero_title.trim(),
           hero_subtitle: settings.hero_subtitle.trim(),
-          hero_image_url: settings.hero_image_url.trim(),
+          hero_image_url: heroImageUrl,
         }),
       });
 
       const nextSettings = data.settings as SiteSettings;
       setSettings(nextSettings);
+      setHeroFile(null);
+      setHeroFileInputKey((current) => current + 1);
       setStatus({ tone: "success", message: "Hero section updated." });
       router.refresh();
     } catch (error) {
@@ -537,7 +550,16 @@ export default function AdminDashboard({
                 onChange={(event) => setSettings((current) => ({ ...current, hero_image_url: event.target.value }))}
                 className="w-full rounded-lg border border-line bg-panel px-3 py-2 text-sm text-paper outline-none focus:border-accent"
                 placeholder="https://..."
-                required
+              />
+            </label>
+            <label className="block">
+              <span className="mb-1 block text-xs uppercase tracking-wider text-muted">Or Upload Hero Image</span>
+              <input
+                key={heroFileInputKey}
+                type="file"
+                accept="image/*"
+                onChange={(event) => setHeroFile(event.target.files?.[0] || null)}
+                className="w-full rounded-lg border border-line bg-panel px-3 py-2 text-sm text-paper outline-none focus:border-accent"
               />
             </label>
             <button
