@@ -17,7 +17,9 @@ export const metadata: Metadata = {
   title: "ESPACE FITNESS SM",
   description: "A modern gym website with admin-managed content and dashboard.",
   icons: {
-    icon: "/favicon.svg",
+    icon: [{ url: "/favicon.svg?v=2", type: "image/svg+xml" }],
+    shortcut: "/favicon.svg?v=2",
+    apple: "/favicon.svg?v=2",
   },
 };
 
