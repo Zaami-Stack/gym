@@ -4,29 +4,68 @@ import Link from "next/link";
 import SignOutButton from "@/components/SignOutButton";
 import { getPublicContent } from "@/lib/content";
 
-const featureCards = [
+const womenProgram = [
   {
-    title: "Strength Lab",
-    text: "Olympic platforms, calibrated plates, and smart programming to help you lift with purpose.",
+    day: "Mardi",
+    sessions: [
+      { time: "14h30 - 15h15", className: "STEP" },
+      { time: "15h30 - 16h15", className: "BODY COMBAT" },
+      { time: "18h00 - 18h45", className: "YOGA" },
+      { time: "19h00 - 19h45", className: "BODY ATTACK" },
+    ],
   },
   {
-    title: "Conditioning Arena",
-    text: "HIIT lanes, sled tracks, and guided circuits for speed, stamina, and body transformation.",
+    day: "Jeudi",
+    sessions: [
+      { time: "14h30 - 15h15", className: "GYM BATTON" },
+      { time: "15h30 - 16h15", className: "CIRCUIT TRAINING" },
+      { time: "18h00 - 18h45", className: "BODY ATTACK" },
+      { time: "19h00 - 19h45", className: "BODY SCULPT (TAF-CAF)" },
+    ],
   },
   {
-    title: "Recovery Zone",
-    text: "Mobility classes, guided stretch blocks, and recovery protocols to keep your progress consistent.",
+    day: "Samedi",
+    sessions: [
+      { time: "09h00 - 09h45", className: "ZUMBA" },
+      { time: "10h00 - 10h45", className: "DANCE ORIENTAL" },
+      { time: "11h00 - 11h45", className: "PILATE" },
+      { time: "12h00 - 12h45", className: "DANCE AFRICAINE" },
+    ],
   },
 ];
 
+const womenProgramFlat = womenProgram.flatMap((item) =>
+  item.sessions.map((session) => ({
+    day: item.day,
+    time: session.time,
+    className: session.className,
+  })),
+);
+
+const womenAvailability = [
+  { day: "Mardi", hours: "14h30 - 20h30" },
+  { day: "Jeudi", hours: "14h30 - 20h30" },
+  { day: "Samedi", hours: "09h00 - 13h00" },
+];
+
+const menProgram = [
+  { day: "Lundi", hours: "08:00 - 22:00", course: "" },
+  { day: "Mardi", hours: "08:00 - 14:00", course: "C.P.G (20:30)" },
+  { day: "Mercredi", hours: "08:00 - 22:00", course: "" },
+  { day: "Jeudi", hours: "08:00 - 14:00", course: "" },
+  { day: "Vendredi", hours: "08:00 - 22:00", course: "C.P.G (19:30)" },
+  { day: "Samedi", hours: "14:00 - 18:00", course: "" },
+  { day: "Dimanche", hours: "10:00 - 14:00", course: "" },
+];
+
 const classHours = [
-  { day: "Monday", time: "6:00 AM - 10:00 PM" },
-  { day: "Tuesday", time: "6:00 AM - 10:00 PM" },
-  { day: "Wednesday", time: "6:00 AM - 10:00 PM" },
-  { day: "Thursday", time: "6:00 AM - 10:00 PM" },
-  { day: "Friday", time: "6:00 AM - 9:00 PM" },
-  { day: "Saturday", time: "7:00 AM - 8:00 PM" },
-  { day: "Sunday", time: "8:00 AM - 4:00 PM" },
+  { day: "Monday", time: "08:00 - 22:00" },
+  { day: "Tuesday", time: "08:00 - 14:00" },
+  { day: "Wednesday", time: "08:00 - 22:00" },
+  { day: "Thursday", time: "08:00 - 14:00" },
+  { day: "Friday", time: "08:00 - 22:00" },
+  { day: "Saturday", time: "14:00 - 18:00" },
+  { day: "Sunday", time: "10:00 - 14:00" },
 ];
 
 export const dynamic = "force-dynamic";
@@ -107,13 +146,64 @@ export default async function Home() {
         </div>
       </section>
 
-      <section id="programs" className="mx-auto mt-16 grid max-w-7xl gap-5 px-4 md:grid-cols-3 md:px-8">
-        {featureCards.map((card) => (
-          <article key={card.title} className="hover-lift animate-fade-up rounded-2xl border border-line bg-panel/70 p-6 backdrop-blur">
-            <h2 className="font-heading text-3xl text-accent">{card.title}</h2>
-            <p className="mt-3 text-sm leading-6 text-muted">{card.text}</p>
+      <section id="programs" className="mx-auto mt-16 max-w-7xl px-4 md:px-8">
+        <h2 className="font-heading text-5xl text-paper">Programmes</h2>
+        <div className="mt-6 grid gap-5 lg:grid-cols-2">
+          <article className="hover-lift animate-fade-up rounded-2xl border border-line bg-panel/70 p-6 backdrop-blur">
+            <h3 className="font-heading text-4xl text-accent">Programme Femmes</h3>
+            <div className="mt-4 overflow-x-auto">
+              <table className="min-w-full text-left text-sm">
+                <thead>
+                  <tr className="border-b border-line text-xs uppercase tracking-wider text-muted">
+                    <th className="px-2 py-2">Jour</th>
+                    <th className="px-2 py-2">Horaire</th>
+                    <th className="px-2 py-2">Cours</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {womenProgramFlat.map((item, index) => (
+                    <tr key={`${item.day}-${item.time}-${index}`} className="border-b border-line/60 last:border-b-0">
+                      <td className="px-2 py-2 font-semibold text-paper">{item.day}</td>
+                      <td className="px-2 py-2 text-muted">{item.time}</td>
+                      <td className="px-2 py-2 font-semibold text-accent-2">{item.className}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <ul className="mt-4 space-y-1 text-xs text-muted">
+              {womenAvailability.map((item) => (
+                <li key={item.day}>
+                  {item.day}: {item.hours}
+                </li>
+              ))}
+            </ul>
           </article>
-        ))}
+
+          <article className="hover-lift animate-fade-up rounded-2xl border border-line bg-panel/70 p-6 backdrop-blur">
+            <h3 className="font-heading text-4xl text-accent">Programme Hommes</h3>
+            <div className="mt-4 overflow-x-auto">
+              <table className="min-w-full text-left text-sm">
+                <thead>
+                  <tr className="border-b border-line text-xs uppercase tracking-wider text-muted">
+                    <th className="px-2 py-2">Jour</th>
+                    <th className="px-2 py-2">Horaires</th>
+                    <th className="px-2 py-2">Cours</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {menProgram.map((item) => (
+                    <tr key={item.day} className="border-b border-line/60 last:border-b-0">
+                      <td className="px-2 py-2 font-semibold text-paper">{item.day}</td>
+                      <td className="px-2 py-2 text-muted">{item.hours}</td>
+                      <td className="px-2 py-2 font-semibold text-accent-2">{item.course || "-"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </article>
+        </div>
       </section>
 
       <section id="gallery" className="mx-auto mt-16 max-w-7xl px-4 md:px-8">
