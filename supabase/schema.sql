@@ -9,7 +9,18 @@ create extension if not exists pgcrypto;
 -- Cleanup from older auth models if they exist.
 drop trigger if exists on_auth_user_created on auth.users;
 drop function if exists public.handle_new_user();
-drop function if exists public.is_admin();
+
+-- Old role-based policies that depended on public.is_admin().
+drop policy if exists "Admins can manage site settings" on public.site_settings;
+drop policy if exists "Admins can manage notifications" on public.notifications;
+drop policy if exists "Admins can manage gallery images" on public.gallery_images;
+drop policy if exists "Admins can upload media files" on storage.objects;
+drop policy if exists "Admins can update media files" on storage.objects;
+drop policy if exists "Admins can delete media files" on storage.objects;
+
+-- Drop function after removing dependencies (CASCADE as fallback for any old unknown objects).
+drop function if exists public.is_admin() cascade;
+
 drop table if exists public.profiles;
 drop table if exists public.admin_emails;
 
