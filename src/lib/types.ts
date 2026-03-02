@@ -2,9 +2,18 @@ export type AppUser = {
   id: string;
   name: string;
   email: string;
+  phone: string;
   role: "admin" | "customer";
   created_at: string;
   password_hash: string;
+};
+
+export type CustomerTrackerRow = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  created_at: string;
 };
 
 export type SiteSettings = {

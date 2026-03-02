@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 
-import type { GalleryImage, Notification, SiteSettings } from "@/lib/types";
+import type { CustomerTrackerRow, GalleryImage, Notification, SiteSettings } from "@/lib/types";
 
 type Status = {
   tone: "success" | "error";
@@ -17,6 +17,7 @@ type AdminDashboardProps = {
   initialSettings: SiteSettings;
   initialGallery: GalleryImage[];
   initialNotifications: Notification[];
+  initialCustomers: CustomerTrackerRow[];
 };
 
 function sortGallery(images: GalleryImage[]) {
@@ -54,14 +55,17 @@ export default function AdminDashboard({
   initialSettings,
   initialGallery,
   initialNotifications,
+  initialCustomers,
 }: AdminDashboardProps) {
   const router = useRouter();
 
   const [settings, setSettings] = useState<SiteSettings>(initialSettings);
   const [gallery, setGallery] = useState<GalleryImage[]>(sortGallery(initialGallery));
   const [notifications, setNotifications] = useState<Notification[]>(initialNotifications);
+  const [customers, setCustomers] = useState<CustomerTrackerRow[]>(initialCustomers);
   const [status, setStatus] = useState<Status>(null);
   const [busyAction, setBusyAction] = useState<string | null>(null);
+  const [refreshingCustomers, setRefreshingCustomers] = useState(false);
 
   const [noticeMessage, setNoticeMessage] = useState("");
   const [noticeActive, setNoticeActive] = useState(true);
@@ -293,6 +297,24 @@ export default function AdminDashboard({
     }
   }
 
+  async function handleRefreshCustomers() {
+    setRefreshingCustomers(true);
+    setStatus(null);
+
+    try {
+      const data = await requestJson("/api/admin/customers");
+      const rows = (data.customers as CustomerTrackerRow[] | undefined) ?? [];
+      setCustomers(rows);
+      setStatus({ tone: "success", message: "Customer tracker refreshed." });
+      router.refresh();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to refresh customers.";
+      setStatus({ tone: "error", message });
+    } finally {
+      setRefreshingCustomers(false);
+    }
+  }
+
   return (
     <main className="mx-auto max-w-7xl px-3 py-5 md:px-8 md:py-8">
       <header className="flex flex-wrap items-start justify-between gap-4 rounded-2xl border border-line bg-panel/75 p-4 md:p-6">
@@ -330,6 +352,61 @@ export default function AdminDashboard({
           {status.message}
         </div>
       ) : null}
+
+      <section className="mt-6 rounded-2xl border border-line bg-black/30 p-4 md:p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="font-heading text-3xl text-paper md:text-4xl">Customer Tracker</h2>
+          <button
+            type="button"
+            onClick={handleRefreshCustomers}
+            disabled={refreshingCustomers}
+            className="rounded-full border border-accent-2/70 px-4 py-2 text-sm font-semibold text-accent-2 transition hover:bg-accent-2/10 disabled:opacity-60"
+          >
+            {refreshingCustomers ? "Refreshing..." : "Refresh"}
+          </button>
+        </div>
+
+        <div className="mt-4 space-y-2 md:hidden">
+          {customers.map((customer) => (
+            <article key={customer.id} className="rounded-xl border border-line bg-panel/70 p-3">
+              <p className="text-sm font-semibold text-paper">{customer.name}</p>
+              <p className="mt-1 text-xs text-muted">{customer.email}</p>
+              <p className="mt-1 text-xs text-accent-2">{customer.phone || "-"}</p>
+            </article>
+          ))}
+          {customers.length === 0 ? <p className="text-xs text-muted">No customers signed up yet.</p> : null}
+        </div>
+
+        <div className="mt-4 hidden overflow-x-auto md:block">
+          <table className="min-w-full text-left text-sm">
+            <thead>
+              <tr className="border-b border-line text-xs uppercase tracking-wider text-muted">
+                <th className="px-2 py-2">Name</th>
+                <th className="px-2 py-2">Email</th>
+                <th className="px-2 py-2">Phone</th>
+                <th className="px-2 py-2">Signed At</th>
+              </tr>
+            </thead>
+            <tbody>
+              {customers.map((customer) => (
+                <tr key={customer.id} className="border-b border-line/60 last:border-b-0">
+                  <td className="px-2 py-2 font-semibold text-paper">{customer.name}</td>
+                  <td className="px-2 py-2 text-muted">{customer.email}</td>
+                  <td className="px-2 py-2 text-accent-2">{customer.phone || "-"}</td>
+                  <td className="px-2 py-2 text-muted">{new Date(customer.created_at).toLocaleString()}</td>
+                </tr>
+              ))}
+              {customers.length === 0 ? (
+                <tr>
+                  <td className="px-2 py-3 text-xs text-muted" colSpan={4}>
+                    No customers signed up yet.
+                  </td>
+                </tr>
+              ) : null}
+            </tbody>
+          </table>
+        </div>
+      </section>
 
       <section className="mt-6 grid gap-6 xl:grid-cols-[1.1fr_1fr]">
         <article className="rounded-2xl border border-line bg-black/30 p-4 md:p-5">

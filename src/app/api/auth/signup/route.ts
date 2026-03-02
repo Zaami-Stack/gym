@@ -16,6 +16,7 @@ type CustomerUserRow = {
   id: string;
   name: string;
   email: string;
+  phone: string;
   role: "customer";
 };
 
@@ -32,7 +33,7 @@ export async function POST(request: Request) {
     );
   }
 
-  let body: { name?: string; email?: string; password?: string };
+  let body: { name?: string; email?: string; phone?: string; password?: string };
   try {
     body = await request.json();
   } catch {
@@ -41,6 +42,7 @@ export async function POST(request: Request) {
 
   const name = String(body.name || "").trim();
   const email = normalizeEmail(body.email || "");
+  const phone = String(body.phone || "").trim();
   const password = String(body.password || "");
 
   if (name.length < 2) {
@@ -48,6 +50,9 @@ export async function POST(request: Request) {
   }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return NextResponse.json({ message: "Valid email is required." }, { status: 400 });
+  }
+  if (!/^[0-9+\s()-]{8,20}$/.test(phone)) {
+    return NextResponse.json({ message: "Valid phone number is required." }, { status: 400 });
   }
   if (password.length < 6) {
     return NextResponse.json({ message: "Password must be at least 6 characters." }, { status: 400 });
@@ -76,6 +81,7 @@ export async function POST(request: Request) {
     id: randomUUID(),
     name,
     email,
+    phone,
     password_hash: hashPassword(password),
     role: "customer" as const,
   };
@@ -83,7 +89,7 @@ export async function POST(request: Request) {
   const { data, error } = await supabase
     .from("users")
     .insert(payload)
-    .select("id,name,email,role")
+    .select("id,name,email,phone,role")
     .single();
 
   if (error) {

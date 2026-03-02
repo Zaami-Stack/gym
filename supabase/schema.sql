@@ -20,10 +20,15 @@ create table if not exists public.users (
   id uuid primary key default gen_random_uuid(),
   name text not null,
   email text not null unique check (email = lower(email)),
+  phone text not null default '',
   password_hash text not null,
   role text not null default 'customer' check (role in ('customer')),
   created_at timestamptz not null default now()
 );
+
+-- Migration-safe for existing projects.
+alter table public.users
+add column if not exists phone text not null default '';
 
 create table if not exists public.site_settings (
   id int primary key,
