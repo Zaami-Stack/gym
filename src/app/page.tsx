@@ -68,6 +68,8 @@ const openingHours = [
   { day: "Dimanche", hours: "10:00 - 14:00" },
 ];
 
+const instagramUrl = "https://www.instagram.com/espacefitnesssm/";
+
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
@@ -78,7 +80,7 @@ export default async function Home() {
       <nav className="sticky top-0 z-40 border-b border-line bg-ink/90 backdrop-blur">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3 md:px-8">
           <p className="font-heading text-3xl tracking-[0.14em] text-accent md:text-4xl">ESPACE FITNESS SM</p>
-          <div className="hidden items-center gap-4 text-sm text-muted md:flex">
+          <div className="flex items-center gap-3 text-xs text-muted md:gap-4 md:text-sm">
             <a href="#programs" className="transition hover:text-paper">
               Programmes
             </a>
@@ -87,6 +89,12 @@ export default async function Home() {
             </a>
             <a href="#visit" className="transition hover:text-paper">
               Tarifs
+            </a>
+            <a href="#contact" className="transition hover:text-paper">
+              Contact
+            </a>
+            <a href={instagramUrl} target="_blank" rel="noreferrer" className="transition hover:text-paper">
+              Instagram
             </a>
           </div>
           {isAdmin ? (
@@ -273,6 +281,31 @@ export default async function Home() {
               <p className="font-heading text-3xl text-accent-2">7</p>
               <p className="text-xs text-muted">Days open</p>
             </div>
+          </div>
+        </article>
+      </section>
+
+      <section id="contact" className="mx-auto mt-16 max-w-7xl px-4 md:px-8">
+        <article className="rounded-2xl border border-line bg-panel/70 p-7">
+          <h2 className="font-heading text-5xl text-paper">Contact</h2>
+          <p className="mt-3 text-sm text-muted">
+            Visit ESPACE FITNESS SM reception for membership and coaching info. You can also contact us on Instagram.
+          </p>
+          <div className="mt-5 flex flex-wrap gap-3">
+            <a
+              href={instagramUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="rounded-full border border-accent-2/70 bg-accent-2/20 px-5 py-2 text-sm font-semibold text-paper transition hover:bg-accent-2/30"
+            >
+              Instagram
+            </a>
+            <a
+              href="#programs"
+              className="rounded-full border border-paper/30 px-5 py-2 text-sm font-semibold text-paper transition hover:border-accent-2"
+            >
+              Programmes
+            </a>
           </div>
         </article>
       </section>
