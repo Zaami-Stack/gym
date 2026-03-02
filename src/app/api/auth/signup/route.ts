@@ -4,7 +4,6 @@ import { NextResponse } from "next/server";
 
 import {
   clearSessionCookie,
-  getConfiguredAdmin,
   hashPassword,
   isAuthConfigured,
   normalizeEmail,
@@ -27,7 +26,7 @@ export async function POST(request: Request) {
     await clearSessionCookie();
     return NextResponse.json(
       {
-        message: "Authentication is not configured. Set AUTH_SECRET, ADMIN_EMAIL and ADMIN_PASSWORD.",
+        message: "Authentication is not configured. Set AUTH_SECRET.",
       },
       { status: 503 },
     );
@@ -56,11 +55,6 @@ export async function POST(request: Request) {
   }
   if (password.length < 6) {
     return NextResponse.json({ message: "Password must be at least 6 characters." }, { status: 400 });
-  }
-
-  const admin = getConfiguredAdmin();
-  if (admin && admin.email === email) {
-    return NextResponse.json({ message: "This email is reserved for admin." }, { status: 400 });
   }
 
   const supabase = createAdminClient();

@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 
 import {
-  authenticateConfiguredAdmin,
   clearSessionCookie,
   isAuthConfigured,
   normalizeEmail,
@@ -10,12 +9,12 @@ import {
 } from "@/lib/auth/session";
 import { createAdminClient } from "@/lib/supabase/admin";
 
-type CustomerUserRow = {
+type AppUserRow = {
   id: string;
   name: string;
   email: string;
   password_hash: string;
-  role: "customer";
+  role: "admin" | "customer";
 };
 
 export const runtime = "nodejs";
@@ -25,7 +24,7 @@ export async function POST(request: Request) {
     await clearSessionCookie();
     return NextResponse.json(
       {
-        message: "Authentication is not configured. Set AUTH_SECRET, ADMIN_EMAIL and ADMIN_PASSWORD.",
+        message: "Authentication is not configured. Set AUTH_SECRET.",
       },
       { status: 503 },
     );
@@ -44,12 +43,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: "Email and password are required." }, { status: 400 });
   }
 
-  const admin = authenticateConfiguredAdmin(email, password);
-  if (admin) {
-    await setSessionCookie(admin);
-    return NextResponse.json({ user: admin }, { status: 200 });
-  }
-
   const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("users")
@@ -62,17 +55,21 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: error.message || "Login failed." }, { status: 500 });
   }
 
-  const customer = data as CustomerUserRow | null;
-  if (!customer || customer.role !== "customer" || !verifyPassword(customer.password_hash, password)) {
+  const account = data as AppUserRow | null;
+  if (
+    !account ||
+    (account.role !== "admin" && account.role !== "customer") ||
+    !verifyPassword(account.password_hash, password)
+  ) {
     await clearSessionCookie();
     return NextResponse.json({ message: "Invalid email or password." }, { status: 401 });
   }
 
   const user = {
-    id: customer.id,
-    email: customer.email,
-    name: customer.name || "Customer",
-    role: "customer" as const,
+    id: account.id,
+    email: account.email,
+    name: account.name || "User",
+    role: account.role,
   };
 
   await setSessionCookie(user);

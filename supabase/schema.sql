@@ -1,7 +1,7 @@
 -- Run this script in Supabase SQL Editor.
 -- Auth concept:
--- - Admin account comes from env vars: ADMIN_EMAIL + ADMIN_PASSWORD
--- - Customers use signup/login with email + password stored in public.users
+-- - Admin and customer accounts use signup/login with email + password stored in public.users
+-- - Multiple admin accounts are supported with role = 'admin'
 -- - Role checks happen in server API routes (cookie session), similar to zaamiflower concept
 
 create extension if not exists pgcrypto;
@@ -22,13 +22,20 @@ create table if not exists public.users (
   email text not null unique check (email = lower(email)),
   phone text not null default '',
   password_hash text not null,
-  role text not null default 'customer' check (role in ('customer')),
+  role text not null default 'customer' check (role in ('customer', 'admin')),
   created_at timestamptz not null default now()
 );
 
 -- Migration-safe for existing projects.
 alter table public.users
 add column if not exists phone text not null default '';
+
+-- Migration-safe role update for existing projects.
+alter table public.users
+drop constraint if exists users_role_check;
+
+alter table public.users
+add constraint users_role_check check (role in ('customer', 'admin'));
 
 create table if not exists public.site_settings (
   id int primary key,

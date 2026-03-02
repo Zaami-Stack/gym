@@ -21,6 +21,7 @@ export async function GET() {
   const { data, error } = await supabase
     .from("users")
     .select("id,name,email,phone,created_at")
+    .eq("role", "customer")
     .order("created_at", { ascending: false });
 
   if (error) {

@@ -143,47 +143,8 @@ export function verifyPassword(storedPassword: string, inputPassword: string) {
   return timingSafeEqual(expected, actual);
 }
 
-export function getConfiguredAdmin() {
-  const email = normalizeEmail(process.env.ADMIN_EMAIL || "");
-  const password = String(process.env.ADMIN_PASSWORD || "");
-
-  if (!email || !password) {
-    return null;
-  }
-
-  return {
-    id: "admin-1",
-    email,
-    password,
-    name: "Admin",
-    role: "admin" as const,
-  };
-}
-
 export function isAuthConfigured() {
-  return Boolean(getConfiguredAdmin() && hasValidSecret());
-}
-
-export function authenticateConfiguredAdmin(email: string, password: string) {
-  const admin = getConfiguredAdmin();
-  if (!admin) {
-    return null;
-  }
-
-  const normalizedEmail = normalizeEmail(email);
-  if (!safeEqual(admin.email, normalizedEmail)) {
-    return null;
-  }
-  if (!verifyPassword(admin.password, password)) {
-    return null;
-  }
-
-  return {
-    id: admin.id,
-    email: admin.email,
-    role: admin.role,
-    name: admin.name,
-  } satisfies SessionUser;
+  return hasValidSecret();
 }
 
 export async function setSessionCookie(user: SessionUser) {

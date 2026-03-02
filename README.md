@@ -2,9 +2,9 @@
 
 Fullstack gym website with admin dashboard, using the same auth concept as `zaamiflower`:
 
-- `ADMIN_EMAIL` + `ADMIN_PASSWORD` from env = admin account
-- `Sign up` creates normal users in database (`customer`)
-- Signed-in admin sees dashboard, non-admin users do not
+- `Sign up` creates users in database (`customer` by default)
+- Any user with role `admin` can access the dashboard
+- Signed-in non-admin users cannot access `/admin`
 
 ## Features
 
@@ -37,8 +37,6 @@ Required vars:
 - `SUPABASE_URL`
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `AUTH_SECRET` (strong random string, 24+ chars)
-- `ADMIN_EMAIL`
-- `ADMIN_PASSWORD`
 
 Example:
 
@@ -46,8 +44,6 @@ Example:
 SUPABASE_URL=https://xxxx.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=eyJ...
 AUTH_SECRET=replace-with-very-long-random-string
-ADMIN_EMAIL=admin@yourgym.com
-ADMIN_PASSWORD=StrongAdminPassword123!
 ```
 
 ## 3) Run Locally
@@ -72,6 +68,19 @@ Open:
 
 ## Auth Notes
 
-- Admin account is **not** created in Supabase Auth.
-- Admin credentials come from env vars (`ADMIN_EMAIL`, `ADMIN_PASSWORD`).
-- Customer accounts are created by `Sign up` and stored in `public.users`.
+- Accounts are stored in `public.users` (not Supabase Auth).
+- `Sign up` always creates `role = 'customer'`.
+- Admin access is controlled by `users.role = 'admin'`.
+
+## Add Admin Account
+
+1. Sign up normally from `/admin/login` (creates a customer user).
+2. In Supabase SQL Editor, run:
+
+```sql
+update public.users
+set role = 'admin'
+where email = lower('admin@example.com');
+```
+
+Replace `admin@example.com` with the real user email.
