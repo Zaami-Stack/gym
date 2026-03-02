@@ -86,9 +86,19 @@ export default function MainNav({ isAdmin, hasSession, instagramUrl }: MainNavPr
     <nav className="sticky top-0 z-40 border-b border-line bg-ink/90 backdrop-blur">
       <div className="mx-auto max-w-7xl px-4 py-3 md:px-8">
         <div className="flex items-center justify-between gap-3">
-          <p className="font-heading text-2xl tracking-[0.14em] text-accent sm:text-3xl md:text-4xl">ESPACE FITNESS SM</p>
+          <p className="font-heading text-2xl tracking-[0.08em] text-accent sm:text-3xl md:text-4xl">ESPACE FITNESS SM</p>
 
-          <div className="hidden md:block">
+          <div className="hidden items-center gap-4 md:flex">
+            <div className="flex items-center gap-4 text-sm text-muted">
+              {navItems.map((item) => (
+                <a key={item.href} href={item.href} className="transition hover:text-paper">
+                  {item.label}
+                </a>
+              ))}
+              <a href={instagramUrl} target="_blank" rel="noreferrer" className="transition hover:text-paper">
+                Instagram
+              </a>
+            </div>
             <AuthAction isAdmin={isAdmin} hasSession={hasSession} />
           </div>
 
@@ -101,17 +111,6 @@ export default function MainNav({ isAdmin, hasSession, instagramUrl }: MainNavPr
           >
             {menuOpen ? "Close" : "Menu"}
           </button>
-        </div>
-
-        <div className="mt-3 hidden items-center gap-4 text-sm text-muted md:flex">
-          {navItems.map((item) => (
-            <a key={item.href} href={item.href} className="transition hover:text-paper">
-              {item.label}
-            </a>
-          ))}
-          <a href={instagramUrl} target="_blank" rel="noreferrer" className="transition hover:text-paper">
-            Instagram
-          </a>
         </div>
       </div>
 
