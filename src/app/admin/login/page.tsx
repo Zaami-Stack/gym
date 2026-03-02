@@ -89,8 +89,8 @@ export default function AdminLoginPage() {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-lg items-center px-4 py-8">
-      <section className="w-full rounded-2xl border border-line bg-panel/80 p-7">
-        <p className="font-heading text-5xl text-paper">Gym Auth</p>
+      <section className="animate-fade-up w-full rounded-2xl border border-line bg-panel/80 p-7">
+        <p className="font-heading animate-float text-5xl text-accent">ESPACE FITNESS SM</p>
         <p className="mt-2 text-sm text-muted">Sign in as admin to manage the dashboard, or sign up as user.</p>
 
         <div className="mt-6 inline-flex rounded-full border border-line bg-black/30 p-1">
@@ -110,13 +110,13 @@ export default function AdminLoginPage() {
               setMode("signup");
               setError("");
             }}
-            className={`rounded-full px-4 py-2 text-sm ${mode === "signup" ? "bg-accent text-black" : "text-muted"}`}
+            className={`rounded-full px-4 py-2 text-sm ${mode === "signup" ? "bg-accent-2 text-paper" : "text-muted"}`}
           >
             Sign up
           </button>
         </div>
 
-        <form className="mt-4 space-y-4" onSubmit={handleSubmit}>
+        <form className="animate-fade-up-delay-1 mt-4 space-y-4" onSubmit={handleSubmit}>
           {mode === "signup" ? (
             <label className="block">
               <span className="mb-1 block text-xs uppercase tracking-wider text-muted">Name</span>
@@ -153,7 +153,7 @@ export default function AdminLoginPage() {
           <button
             type="submit"
             disabled={busy}
-            className="w-full rounded-full bg-accent px-4 py-2 text-sm font-semibold text-black hover:bg-accent/85 disabled:opacity-60"
+            className="pulse-accent w-full rounded-full bg-accent px-4 py-2 text-sm font-semibold text-black hover:bg-accent/85 disabled:opacity-60"
           >
             {busy ? "Please wait..." : mode === "signup" ? "Create account" : "Sign in"}
           </button>

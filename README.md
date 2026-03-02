@@ -1,4 +1,4 @@
-# Iron Temple Gym Website (Next.js + Supabase + Vercel)
+# ESPACE FITNESS SM Website (Next.js + Supabase + Vercel)
 
 Fullstack gym website with admin dashboard, using the same auth concept as `zaamiflower`:
 

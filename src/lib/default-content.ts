@@ -2,7 +2,7 @@ import type { GalleryImage, SiteSettings } from "@/lib/types";
 
 export const defaultSettings: SiteSettings = {
   id: 1,
-  hero_title: "Build Power. Move Better. Stay Consistent.",
+  hero_title: "ESPACE FITNESS SM - Build Power. Move Better.",
   hero_subtitle:
     "Train with elite coaches, premium equipment, and a results-first program built for real progress.",
   hero_image_url:

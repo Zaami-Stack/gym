@@ -14,7 +14,7 @@ const bodyFont = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "Iron Temple Gym",
+  title: "ESPACE FITNESS SM",
   description: "A modern gym website with admin-managed content and dashboard.",
 };
 

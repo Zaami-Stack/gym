@@ -295,9 +295,9 @@ export default function AdminDashboard({
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-8 md:px-8">
-      <header className="flex flex-wrap items-start justify-between gap-4 rounded-2xl border border-line bg-panel/75 p-6">
+      <header className="animate-fade-up flex flex-wrap items-start justify-between gap-4 rounded-2xl border border-line bg-panel/75 p-6">
         <div>
-          <p className="font-heading text-4xl text-paper md:text-5xl">Admin Dashboard</p>
+          <p className="font-heading text-4xl text-accent md:text-5xl">ESPACE FITNESS SM Dashboard</p>
           <p className="mt-1 text-sm text-muted">Signed in as {adminEmail}</p>
           <p className="mt-1 text-xs text-muted">Use this dashboard to control the live gym website content.</p>
         </div>
@@ -321,7 +321,7 @@ export default function AdminDashboard({
           className={`mt-4 rounded-xl border px-4 py-3 text-sm ${
             status.tone === "success"
               ? "border-accent/45 bg-accent/10 text-accent"
-              : "border-accent-2/45 bg-accent-2/10 text-accent-2"
+              : "border-accent/45 bg-accent/12 text-accent"
           }`}
         >
           {status.message}
@@ -329,7 +329,7 @@ export default function AdminDashboard({
       ) : null}
 
       <section className="mt-6 grid gap-6 xl:grid-cols-[1.1fr_1fr]">
-        <article className="rounded-2xl border border-line bg-black/30 p-5">
+        <article className="hover-lift animate-fade-up rounded-2xl border border-line bg-black/30 p-5">
           <h2 className="font-heading text-4xl text-paper">Hero Section</h2>
           <form className="mt-4 space-y-3" onSubmit={handleSaveHero}>
             <label className="block">
@@ -371,7 +371,7 @@ export default function AdminDashboard({
           </form>
         </article>
 
-        <article className="rounded-2xl border border-line bg-black/30 p-5">
+        <article className="hover-lift animate-fade-up rounded-2xl border border-line bg-black/30 p-5">
           <h2 className="font-heading text-4xl text-paper">Notifications</h2>
           <form className="mt-4 space-y-3" onSubmit={handleAddNotification}>
             <label className="block">
@@ -434,7 +434,7 @@ export default function AdminDashboard({
         </article>
       </section>
 
-      <section className="mt-6 rounded-2xl border border-line bg-black/30 p-5">
+      <section className="hover-lift animate-fade-up mt-6 rounded-2xl border border-line bg-black/30 p-5">
         <h2 className="font-heading text-4xl text-paper">Gallery Manager</h2>
         <form className="mt-4 grid gap-3 lg:grid-cols-2" onSubmit={handleAddGalleryImage}>
           <label className="block">
@@ -480,7 +480,7 @@ export default function AdminDashboard({
 
         <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {gallery.map((item) => (
-            <article key={item.id} className="overflow-hidden rounded-xl border border-line bg-panel/80">
+            <article key={item.id} className="hover-lift overflow-hidden rounded-xl border border-line bg-panel/80">
               <img src={item.image_url} alt={item.alt_text || "Gym image"} className="h-44 w-full object-cover" />
               <div className="space-y-2 p-3">
                 <p className="text-xs text-muted">{item.alt_text || "No alt text provided."}</p>
