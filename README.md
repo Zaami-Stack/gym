@@ -1,56 +1,54 @@
 # Iron Temple Gym Website (Next.js + Supabase + Vercel)
 
-Fullstack gym website with an admin dashboard.
+Fullstack gym website with admin dashboard, using the same auth concept as `zaamiflower`:
+
+- `ADMIN_EMAIL` + `ADMIN_PASSWORD` from env = admin account
+- `Sign up` creates normal users in database (`customer`)
+- Signed-in admin sees dashboard, non-admin users do not
 
 ## Features
 
-- Public gym website with:
+- Public website:
   - Dynamic hero title/subtitle/image
-  - Dynamic gallery section
-  - Dynamic top notifications bar
-- Admin dashboard with email/password login:
-  - `Sign in` / `Sign up` auth page
-  - Update hero content and hero image
-  - Add/enable/disable/delete notifications
+  - Dynamic gallery
+  - Dynamic notification bar
+- Auth:
+  - `Sign in` and `Sign up` (email + password only)
+  - Cookie session auth (`/api/auth/*`)
+- Admin dashboard (admin role only):
+  - Update hero content
+  - Add/toggle/delete notifications
   - Add/delete/reorder gallery images
-- Email/password login with admin email allowlist using Supabase Auth + RLS policies
-- Supabase Storage uploads for hero/gallery images (bucket: `media`)
 
-## Tech
+## 1) Supabase Setup
 
-- Next.js App Router (TypeScript, Tailwind CSS)
-- Supabase (Auth, Postgres, RLS, Storage)
-- Vercel deployment
+1. Create a Supabase project.
+2. Run [`supabase/schema.sql`](./supabase/schema.sql) in SQL Editor.
+3. In Supabase `Project Settings -> API`, copy:
+   - `Project URL`
+   - `service_role` key
 
-## 1) Create Supabase Project (Free Plan)
+## 2) Environment Variables
 
-1. Create a new Supabase project.
-2. In `SQL Editor`, run [`supabase/schema.sql`](./supabase/schema.sql).
-3. In `SQL Editor`, add your admin login email to the allowlist:
+Create `.env.local` from `.env.example`.
 
-```sql
-insert into public.admin_emails(email)
-values ('admin@example.com')
-on conflict do nothing;
+Required vars:
+
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `AUTH_SECRET` (strong random string, 24+ chars)
+- `ADMIN_EMAIL`
+- `ADMIN_PASSWORD`
+
+Example:
+
+```env
+SUPABASE_URL=https://xxxx.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=eyJ...
+AUTH_SECRET=replace-with-very-long-random-string
+ADMIN_EMAIL=admin@yourgym.com
+ADMIN_PASSWORD=StrongAdminPassword123!
 ```
-
-4. In `Authentication > Users`, create a user with the same email and a password.
-5. In `Authentication > Providers > Email`, set `Confirm email` to `OFF` (for pure email+password login without verification).
-
-## 2) Configure Environment Variables
-
-Create `.env.local` from `.env.example`:
-
-```bash
-cp .env.example .env.local
-```
-
-Set:
-
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-
-Both values are in `Supabase > Project Settings > API`.
 
 ## 3) Run Locally
 
@@ -62,21 +60,18 @@ npm run dev
 Open:
 
 - Website: `http://localhost:3000`
-- Admin login: `http://localhost:3000/admin/login`
+- Auth page: `http://localhost:3000/admin/login`
+- Admin dashboard: `http://localhost:3000/admin`
 
 ## 4) Deploy to Vercel
 
-1. Push this repo to GitHub.
-2. Import project into Vercel.
-3. Add the same env vars in Vercel:
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+1. Push to GitHub.
+2. Import repo in Vercel.
+3. Add the same env vars in Vercel project settings.
 4. Deploy.
 
-Your dashboard and public site will use Supabase data on Vercel.
+## Auth Notes
 
-## Notes
-
-- The admin dashboard relies on Supabase RLS policies from `supabase/schema.sql`.
-- Public visitors can only read published content.
-- Only authenticated users whose email exists in `public.admin_emails` can update site content.
+- Admin account is **not** created in Supabase Auth.
+- Admin credentials come from env vars (`ADMIN_EMAIL`, `ADMIN_PASSWORD`).
+- Customer accounts are created by `Sign up` and stored in `public.users`.

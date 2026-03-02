@@ -1,5 +1,6 @@
 import { requireAdmin } from "@/lib/admin";
 import { defaultSettings } from "@/lib/default-content";
+import { createAdminClient } from "@/lib/supabase/admin";
 import type { GalleryImage, Notification, SiteSettings } from "@/lib/types";
 
 import AdminDashboard from "./ui/AdminDashboard";
@@ -7,7 +8,8 @@ import AdminDashboard from "./ui/AdminDashboard";
 export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
-  const { supabase, user } = await requireAdmin();
+  const { user } = await requireAdmin();
+  const supabase = createAdminClient();
 
   const [settingsResult, galleryResult, notificationsResult] = await Promise.all([
     supabase.from("site_settings").select("*").eq("id", 1).maybeSingle(),

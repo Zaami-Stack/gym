@@ -1,6 +1,10 @@
-export type AdminEmail = {
+export type AppUser = {
+  id: string;
+  name: string;
   email: string;
+  role: "admin" | "customer";
   created_at: string;
+  password_hash: string;
 };
 
 export type SiteSettings = {

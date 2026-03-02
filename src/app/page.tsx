@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 
+import SignOutButton from "@/components/SignOutButton";
 import { getPublicContent } from "@/lib/content";
 
 const featureCards = [
@@ -31,7 +32,7 @@ const classHours = [
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const { settings, gallery, notifications, isAdmin } = await getPublicContent();
+  const { settings, gallery, notifications, isAdmin, hasSession } = await getPublicContent();
 
   return (
     <main className="min-h-screen pb-16">
@@ -67,6 +68,8 @@ export default async function Home() {
                 >
                   Dashboard
                 </Link>
+              ) : hasSession ? (
+                <SignOutButton className="rounded-full border border-paper/30 px-4 py-2 text-sm text-paper transition hover:border-accent hover:text-accent disabled:opacity-60" />
               ) : (
                 <Link
                   href="/admin/login"

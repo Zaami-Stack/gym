@@ -2,13 +2,10 @@
 /* eslint-disable @next/next/no-img-element */
 
 import Link from "next/link";
-import { useMemo, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 
-import { createClient } from "@/lib/supabase/client";
 import type { GalleryImage, Notification, SiteSettings } from "@/lib/types";
-
-const STORAGE_BUCKET = "media";
 
 type Status = {
   tone: "success" | "error";
@@ -26,9 +23,30 @@ function sortGallery(images: GalleryImage[]) {
   return [...images].sort((a, b) => a.display_order - b.display_order);
 }
 
-function getFileExtension(filename: string) {
-  const pieces = filename.split(".");
-  return pieces.length > 1 ? pieces[pieces.length - 1] : "jpg";
+async function parseJsonResponse(response: Response) {
+  try {
+    return await response.json();
+  } catch {
+    return null;
+  }
+}
+
+async function requestJson(path: string, init: RequestInit = {}) {
+  const response = await fetch(path, {
+    ...init,
+    headers: {
+      "Content-Type": "application/json",
+      ...(init.headers || {}),
+    },
+    cache: "no-store",
+  });
+  const data = await parseJsonResponse(response);
+
+  if (!response.ok) {
+    throw new Error((data as { message?: string } | null)?.message || "Request failed.");
+  }
+
+  return data as Record<string, unknown>;
 }
 
 export default function AdminDashboard({
@@ -38,7 +56,6 @@ export default function AdminDashboard({
   initialNotifications,
 }: AdminDashboardProps) {
   const router = useRouter();
-  const supabase = useMemo(() => (typeof window === "undefined" ? null : createClient()), []);
 
   const [settings, setSettings] = useState<SiteSettings>(initialSettings);
   const [gallery, setGallery] = useState<GalleryImage[]>(sortGallery(initialGallery));
@@ -46,15 +63,12 @@ export default function AdminDashboard({
   const [status, setStatus] = useState<Status>(null);
   const [busyAction, setBusyAction] = useState<string | null>(null);
 
-  const [heroFile, setHeroFile] = useState<File | null>(null);
-
   const [noticeMessage, setNoticeMessage] = useState("");
   const [noticeActive, setNoticeActive] = useState(true);
 
   const [galleryUrl, setGalleryUrl] = useState("");
   const [galleryAlt, setGalleryAlt] = useState("");
   const [galleryOrder, setGalleryOrder] = useState("1");
-  const [galleryFile, setGalleryFile] = useState<File | null>(null);
   const [galleryOrderDrafts, setGalleryOrderDrafts] = useState<Record<string, string>>(
     () =>
       initialGallery.reduce<Record<string, string>>((acc, item) => {
@@ -63,65 +77,23 @@ export default function AdminDashboard({
       }, {}),
   );
 
-  function getSupabaseClient() {
-    if (!supabase) {
-      throw new Error("Supabase client is not ready.");
-    }
-    return supabase;
-  }
-
-  async function uploadImage(file: File) {
-    const client = getSupabaseClient();
-    const ext = getFileExtension(file.name);
-    const filePath = `gym/${Date.now()}-${crypto.randomUUID()}.${ext}`;
-
-    const { error: uploadError } = await client.storage.from(STORAGE_BUCKET).upload(filePath, file, {
-      upsert: true,
-      cacheControl: "3600",
-    });
-
-    if (uploadError) {
-      throw new Error(uploadError.message);
-    }
-
-    const { data } = client.storage.from(STORAGE_BUCKET).getPublicUrl(filePath);
-    return data.publicUrl;
-  }
-
   async function handleSaveHero(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setBusyAction("save-hero");
     setStatus(null);
 
     try {
-      const client = getSupabaseClient();
-      const heroTitle = settings.hero_title.trim();
-      const heroSubtitle = settings.hero_subtitle.trim();
-      let heroImageUrl = settings.hero_image_url.trim();
+      const data = await requestJson("/api/admin/settings", {
+        method: "PATCH",
+        body: JSON.stringify({
+          hero_title: settings.hero_title.trim(),
+          hero_subtitle: settings.hero_subtitle.trim(),
+          hero_image_url: settings.hero_image_url.trim(),
+        }),
+      });
 
-      if (heroFile) {
-        heroImageUrl = await uploadImage(heroFile);
-      }
-
-      if (!heroTitle || !heroSubtitle || !heroImageUrl) {
-        throw new Error("Hero title, subtitle, and image are required.");
-      }
-
-      const payload = {
-        id: 1,
-        hero_title: heroTitle,
-        hero_subtitle: heroSubtitle,
-        hero_image_url: heroImageUrl,
-      };
-
-      const { data, error } = await client.from("site_settings").upsert(payload, { onConflict: "id" }).select().maybeSingle();
-
-      if (error) {
-        throw new Error(error.message);
-      }
-
-      setSettings((data as SiteSettings | null) ?? { ...settings, ...payload, updated_at: settings.updated_at });
-      setHeroFile(null);
+      const nextSettings = data.settings as SiteSettings;
+      setSettings(nextSettings);
       setStatus({ tone: "success", message: "Hero section updated." });
       router.refresh();
     } catch (error) {
@@ -138,26 +110,15 @@ export default function AdminDashboard({
     setStatus(null);
 
     try {
-      const client = getSupabaseClient();
-      const message = noticeMessage.trim();
-      if (!message) {
-        throw new Error("Notification message cannot be empty.");
-      }
-
-      const { data, error } = await client
-        .from("notifications")
-        .insert({
-          message,
+      const data = await requestJson("/api/admin/notifications", {
+        method: "POST",
+        body: JSON.stringify({
+          message: noticeMessage.trim(),
           is_active: noticeActive,
-        })
-        .select()
-        .single();
+        }),
+      });
 
-      if (error) {
-        throw new Error(error.message);
-      }
-
-      const row = data as Notification;
+      const row = data.notification as Notification;
       setNotifications((current) => [row, ...current]);
       setNoticeMessage("");
       setNoticeActive(true);
@@ -176,11 +137,13 @@ export default function AdminDashboard({
     setStatus(null);
 
     try {
-      const client = getSupabaseClient();
-      const { error } = await client.from("notifications").update({ is_active: nextValue }).eq("id", id);
-      if (error) {
-        throw new Error(error.message);
-      }
+      await requestJson("/api/admin/notifications", {
+        method: "PATCH",
+        body: JSON.stringify({
+          id,
+          is_active: nextValue,
+        }),
+      });
 
       setNotifications((current) => current.map((item) => (item.id === id ? { ...item, is_active: nextValue } : item)));
       setStatus({ tone: "success", message: "Notification updated." });
@@ -198,11 +161,9 @@ export default function AdminDashboard({
     setStatus(null);
 
     try {
-      const client = getSupabaseClient();
-      const { error } = await client.from("notifications").delete().eq("id", id);
-      if (error) {
-        throw new Error(error.message);
-      }
+      await requestJson(`/api/admin/notifications?id=${encodeURIComponent(id)}`, {
+        method: "DELETE",
+      });
 
       setNotifications((current) => current.filter((item) => item.id !== id));
       setStatus({ tone: "success", message: "Notification deleted." });
@@ -221,14 +182,9 @@ export default function AdminDashboard({
     setStatus(null);
 
     try {
-      const client = getSupabaseClient();
-      let imageUrl = galleryUrl.trim();
-      if (galleryFile) {
-        imageUrl = await uploadImage(galleryFile);
-      }
-
+      const imageUrl = galleryUrl.trim();
       if (!imageUrl) {
-        throw new Error("Choose a file or provide an image URL.");
+        throw new Error("Image URL is required.");
       }
 
       const orderValue = Number.parseInt(galleryOrder, 10);
@@ -236,21 +192,16 @@ export default function AdminDashboard({
         throw new Error("Display order must be a valid number.");
       }
 
-      const { data, error } = await client
-        .from("gallery_images")
-        .insert({
+      const data = await requestJson("/api/admin/gallery", {
+        method: "POST",
+        body: JSON.stringify({
           image_url: imageUrl,
           alt_text: galleryAlt.trim(),
           display_order: orderValue,
-        })
-        .select()
-        .single();
+        }),
+      });
 
-      if (error) {
-        throw new Error(error.message);
-      }
-
-      const row = data as GalleryImage;
+      const row = data.image as GalleryImage;
       setGallery((current) => sortGallery([...current, row]));
       setGalleryOrderDrafts((current) => ({
         ...current,
@@ -259,7 +210,6 @@ export default function AdminDashboard({
       setGalleryUrl("");
       setGalleryAlt("");
       setGalleryOrder(String(orderValue + 1));
-      setGalleryFile(null);
       setStatus({ tone: "success", message: "Gallery image added." });
       router.refresh();
     } catch (error) {
@@ -275,11 +225,9 @@ export default function AdminDashboard({
     setStatus(null);
 
     try {
-      const client = getSupabaseClient();
-      const { error } = await client.from("gallery_images").delete().eq("id", id);
-      if (error) {
-        throw new Error(error.message);
-      }
+      await requestJson(`/api/admin/gallery?id=${encodeURIComponent(id)}`, {
+        method: "DELETE",
+      });
 
       setGallery((current) => current.filter((item) => item.id !== id));
       setGalleryOrderDrafts((current) => {
@@ -302,17 +250,19 @@ export default function AdminDashboard({
     setStatus(null);
 
     try {
-      const client = getSupabaseClient();
       const draft = galleryOrderDrafts[id];
       const nextOrder = Number.parseInt(draft, 10);
       if (!Number.isFinite(nextOrder)) {
         throw new Error("Order must be a valid number.");
       }
 
-      const { error } = await client.from("gallery_images").update({ display_order: nextOrder }).eq("id", id);
-      if (error) {
-        throw new Error(error.message);
-      }
+      await requestJson("/api/admin/gallery", {
+        method: "PATCH",
+        body: JSON.stringify({
+          id,
+          display_order: nextOrder,
+        }),
+      });
 
       setGallery((current) =>
         sortGallery(current.map((item) => (item.id === id ? { ...item, display_order: nextOrder } : item))),
@@ -331,10 +281,16 @@ export default function AdminDashboard({
     setBusyAction("signout");
     setStatus(null);
 
-    const client = getSupabaseClient();
-    await client.auth.signOut();
-    router.replace("/admin/login");
-    router.refresh();
+    try {
+      await requestJson("/api/auth/logout", { method: "POST" });
+      router.replace("/admin/login");
+      router.refresh();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to sign out.";
+      setStatus({ tone: "error", message });
+    } finally {
+      setBusyAction(null);
+    }
   }
 
   return (
@@ -402,15 +358,7 @@ export default function AdminDashboard({
                 onChange={(event) => setSettings((current) => ({ ...current, hero_image_url: event.target.value }))}
                 className="w-full rounded-lg border border-line bg-panel px-3 py-2 text-sm text-paper outline-none focus:border-accent"
                 placeholder="https://..."
-              />
-            </label>
-            <label className="block">
-              <span className="mb-1 block text-xs uppercase tracking-wider text-muted">Or Upload New Hero Image</span>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(event) => setHeroFile(event.target.files?.[0] ?? null)}
-                className="w-full rounded-lg border border-line bg-panel px-3 py-2 text-sm text-paper file:mr-3 file:rounded-md file:border-0 file:bg-accent file:px-3 file:py-1 file:text-black"
+                required
               />
             </label>
             <button
@@ -497,15 +445,7 @@ export default function AdminDashboard({
               onChange={(event) => setGalleryUrl(event.target.value)}
               className="w-full rounded-lg border border-line bg-panel px-3 py-2 text-sm text-paper outline-none focus:border-accent"
               placeholder="https://..."
-            />
-          </label>
-          <label className="block">
-            <span className="mb-1 block text-xs uppercase tracking-wider text-muted">Or Upload File</span>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(event) => setGalleryFile(event.target.files?.[0] ?? null)}
-              className="w-full rounded-lg border border-line bg-panel px-3 py-2 text-sm text-paper file:mr-3 file:rounded-md file:border-0 file:bg-accent file:px-3 file:py-1 file:text-black"
+              required
             />
           </label>
           <label className="block">
@@ -517,7 +457,7 @@ export default function AdminDashboard({
               placeholder="e.g. Dumbbell area at sunrise"
             />
           </label>
-          <label className="block">
+          <label className="block lg:col-span-2">
             <span className="mb-1 block text-xs uppercase tracking-wider text-muted">Display Order</span>
             <input
               type="number"
