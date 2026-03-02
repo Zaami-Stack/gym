@@ -9,13 +9,17 @@ import { createClient } from "@/lib/supabase/client";
 const roleErrorMessage =
   "This account is not an admin. Add this email to public.admin_emails in Supabase SQL Editor.";
 
+type AuthMode = "signin" | "signup";
+
 export default function AdminLoginPage() {
   const router = useRouter();
   const supabase = useMemo(() => (typeof window === "undefined" ? null : createClient()), []);
 
+  const [mode, setMode] = useState<AuthMode>("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
+  const [notice, setNotice] = useState<string>("");
   const [error, setError] = useState<string>("");
 
   useEffect(() => {
@@ -35,10 +39,26 @@ export default function AdminLoginPage() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setBusy(true);
+    setNotice("");
     setError("");
 
     try {
       const client = getSupabaseClient();
+
+      if (mode === "signup") {
+        const { error: signUpError } = await client.auth.signUp({
+          email: email.trim(),
+          password,
+        });
+
+        if (signUpError) {
+          throw new Error(signUpError.message);
+        }
+
+        setNotice("Account created. If email confirmation is enabled, verify your email, then sign in.");
+        setMode("signin");
+        return;
+      }
 
       const { error: authError } = await client.auth.signInWithPassword({
         email: email.trim(),
@@ -88,10 +108,37 @@ export default function AdminLoginPage() {
   return (
     <main className="mx-auto flex min-h-screen max-w-lg items-center px-4 py-8">
       <section className="w-full rounded-2xl border border-line bg-panel/80 p-7">
-        <p className="font-heading text-5xl text-paper">Admin Login</p>
-        <p className="mt-2 text-sm text-muted">Use your Supabase Auth email and password.</p>
+        <p className="font-heading text-5xl text-paper">Gym Auth</p>
+        <p className="mt-2 text-sm text-muted">
+          Sign in or create an account. Dashboard access is still limited to admin emails.
+        </p>
 
-        <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
+        <div className="mt-6 inline-flex rounded-full border border-line bg-black/30 p-1">
+          <button
+            type="button"
+            onClick={() => {
+              setMode("signin");
+              setError("");
+              setNotice("");
+            }}
+            className={`rounded-full px-4 py-2 text-sm ${mode === "signin" ? "bg-accent text-black" : "text-muted"}`}
+          >
+            Sign in
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setMode("signup");
+              setError("");
+              setNotice("");
+            }}
+            className={`rounded-full px-4 py-2 text-sm ${mode === "signup" ? "bg-accent text-black" : "text-muted"}`}
+          >
+            Sign up
+          </button>
+        </div>
+
+        <form className="mt-4 space-y-4" onSubmit={handleSubmit}>
           <label className="block">
             <span className="mb-1 block text-xs uppercase tracking-wider text-muted">Email</span>
             <input
@@ -112,13 +159,19 @@ export default function AdminLoginPage() {
               required
             />
           </label>
+          {mode === "signup" ? (
+            <p className="text-xs text-muted">
+              Password should be at least 6 characters (or follow your Supabase Auth password policy).
+            </p>
+          ) : null}
+          {notice ? <p className="rounded-lg border border-accent/50 bg-accent/10 px-3 py-2 text-xs text-accent">{notice}</p> : null}
           {error ? <p className="rounded-lg border border-accent-2/50 bg-accent-2/10 px-3 py-2 text-xs text-accent-2">{error}</p> : null}
           <button
             type="submit"
             disabled={busy}
             className="w-full rounded-full bg-accent px-4 py-2 text-sm font-semibold text-black hover:bg-accent/85 disabled:opacity-60"
           >
-            {busy ? "Signing in..." : "Sign in"}
+            {busy ? "Please wait..." : mode === "signup" ? "Create account" : "Sign in"}
           </button>
         </form>
 

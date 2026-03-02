@@ -9,6 +9,7 @@ Fullstack gym website with an admin dashboard.
   - Dynamic gallery section
   - Dynamic top notifications bar
 - Admin dashboard with email/password login:
+  - `Sign in` / `Sign up` auth page
   - Update hero content and hero image
   - Add/enable/disable/delete notifications
   - Add/delete/reorder gallery images

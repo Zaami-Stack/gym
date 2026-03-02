@@ -72,7 +72,7 @@ export default async function Home() {
                   href="/admin/login"
                   className="rounded-full border border-paper/30 px-4 py-2 text-sm text-paper transition hover:border-accent hover:text-accent"
                 >
-                  Login
+                  Sign in / Sign up
                 </Link>
               )}
             </header>
